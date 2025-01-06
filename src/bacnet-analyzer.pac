@@ -393,16 +393,98 @@ refine flow BACNET_Flow += {
     ##          + Matches bvlc_functions in consts.zeek
     ##      - npdu_message_type   -> NPDU Message Type
     ##          + Matches npdu_message_types in consts.zeek
+    ##      - dnet               -> NPDU Destination Network Number
+    ##      - dlen               -> NPDU Destination Length
+    ##      - dadr               -> NPDU Destination Address
+    ##      - snet               -> NPDU Source Network Number
+    ##      - slen               -> NPDU Source Length
+    ##      - sadr               -> NPDU Source Address
+    ##      - hop_count          -> NPDU Hop Count
     ## ------------------------------------------------------------------------------------------------
-    function process_bacnet_npdu_header(is_orig: bool, bvlc_function: uint8, npdu_message_type: uint8): bool
+    function process_bacnet_npdu_header_both(is_orig: bool, bvlc_function: uint8, npdu_message_type: uint8, 
+                                           dnet: uint16, dlen: uint8, dadr: bytestring,
+                                           snet: uint16, slen: uint8, sadr: bytestring,
+                                           hop_count: uint8): bool
         %{
             if ( ::bacnet_npdu_header )
             {
                 zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
-                                                           connection()->zeek_analyzer()->Conn(),
-                                                           is_orig,
-                                                           bvlc_function,
-                                                           npdu_message_type);
+                                                          connection()->zeek_analyzer()->Conn(),
+                                                          is_orig,
+                                                          bvlc_function,
+                                                          npdu_message_type,
+                                                          dnet,
+                                                          dlen,
+                                                          zeek::make_intrusive<zeek::StringVal>(get_string2(dadr)),
+                                                          snet,
+                                                          slen,
+                                                          zeek::make_intrusive<zeek::StringVal>(get_string2(sadr)),
+                                                          hop_count);
+            }
+            return true;
+        %}
+
+    function process_bacnet_npdu_header_dest(is_orig: bool, bvlc_function: uint8, npdu_message_type: uint8,
+                                           dnet: uint16, dlen: uint8, dadr: bytestring,
+                                           hop_count: uint8): bool
+        %{
+            if ( ::bacnet_npdu_header )
+            {
+                zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
+                                                          connection()->zeek_analyzer()->Conn(),
+                                                          is_orig,
+                                                          bvlc_function,
+                                                          npdu_message_type,
+                                                          dnet,
+                                                          dlen,
+                                                          zeek::make_intrusive<zeek::StringVal>(get_string2(dadr)),
+                                                          0xFFFF,
+                                                          0xFF,
+                                                          zeek::make_intrusive<zeek::StringVal>(""),
+                                                          hop_count);
+            }
+            return true;
+        %}
+
+    function process_bacnet_npdu_header_src(is_orig: bool, bvlc_function: uint8, npdu_message_type: uint8,
+                                          snet: uint16, slen: uint8, sadr: bytestring,
+                                          hop_count: uint8): bool
+        %{
+            if ( ::bacnet_npdu_header )
+            {
+                zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
+                                                          connection()->zeek_analyzer()->Conn(),
+                                                          is_orig,
+                                                          bvlc_function,
+                                                          npdu_message_type,
+                                                          0xFFFF,
+                                                          0xFF,
+                                                          zeek::make_intrusive<zeek::StringVal>(""),
+                                                          snet,
+                                                          slen,
+                                                          zeek::make_intrusive<zeek::StringVal>(get_string2(sadr)),
+                                                          hop_count);
+            }
+            return true;
+        %}
+
+    function process_bacnet_npdu_header_none(is_orig: bool, bvlc_function: uint8, npdu_message_type: uint8,
+                                           hop_count: uint8): bool
+        %{
+            if ( ::bacnet_npdu_header )
+            {
+                zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
+                                                          connection()->zeek_analyzer()->Conn(),
+                                                          is_orig,
+                                                          bvlc_function,
+                                                          npdu_message_type,
+                                                          0xFFFF,
+                                                          0xFF,
+                                                          zeek::make_intrusive<zeek::StringVal>(""),
+                                                          0xFFFF,
+                                                          0xFF,
+                                                          zeek::make_intrusive<zeek::StringVal>(""),
+                                                          hop_count);
             }
             return true;
         %}

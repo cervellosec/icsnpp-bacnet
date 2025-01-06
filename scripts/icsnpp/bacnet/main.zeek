@@ -33,6 +33,13 @@ export {
         pdu_service             : string    &log;   # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
         invoke_id               : count     &log;   # Invoke ID
         result_code             : string    &log;   # See (abort_reasons, reject_reasons, and error_codes)
+        npdu_dnet               : count     &log &optional;   # NPDU Destination Network Number
+        npdu_dlen               : count     &log &optional;   # NPDU Destination Length
+        npdu_dadr               : string    &log &optional;   # NPDU Destination Address
+        npdu_snet               : count     &log &optional;   # NPDU Source Network Number
+        npdu_slen               : count     &log &optional;   # NPDU Source Length
+        npdu_sadr               : string    &log &optional;   # NPDU Source Address
+        npdu_hop_count          : count     &log &optional;   # NPDU Hop Count
     };
 
     global log_bacnet: event(rec: BACnet_Header);
@@ -228,7 +235,14 @@ event bacnet_apdu_header(c: connection,
 event bacnet_npdu_header(c: connection,
                          is_orig: bool,
                          bvlc_function: count,
-                         npdu_message_type: count){
+                         npdu_message_type: count,
+                         dnet: count,
+                         dlen: count,
+                         dadr: string,
+                         snet: count,
+                         slen: count,
+                         sadr: string,
+                         hop_count: count){
 
     set_service(c);
     local bacnet_log: BACnet_Header;
@@ -255,6 +269,21 @@ event bacnet_npdu_header(c: connection,
 
     bacnet_log$pdu_type = "NPDU";
     bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+
+    if (dlen != 255) {
+        bacnet_log$npdu_dnet = dnet;
+        bacnet_log$npdu_dlen = dlen;
+        bacnet_log$npdu_dadr = dadr;
+    }
+
+    if (slen != 255) {
+        bacnet_log$npdu_snet = snet;
+        bacnet_log$npdu_slen = slen;
+        bacnet_log$npdu_sadr = sadr;
+    }
+
+    if (hop_count != 255)
+        bacnet_log$npdu_hop_count = hop_count;
 
     Log::write(LOG_BACNET, bacnet_log);
 }

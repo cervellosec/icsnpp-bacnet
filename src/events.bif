@@ -42,13 +42,27 @@ event bacnet_apdu_header%(c: connection,
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
 ##      - bvlc_function:        count       -> BVLC Function (see bvlc_functions in consts.pac)
 ##      - npdu_message_type:    count       -> NPDU Message Type (see npdu_message_types in consts.zeek)
+##      - dnet:                 count       -> NPDU Destination Network Number
+##      - dlen:                 count       -> NPDU Destination Length
+##      - dadr:                 string      -> NPDU Destination Address
+##      - snet:                 count       -> NPDU Source Network Number
+##      - slen:                 count       -> NPDU Source Length
+##      - sadr:                 string      -> NPDU Source Address
+##      - hop_count:            count       -> NPDU Hop Count
 ## Default Output:
 ##      Writes to log file bacnet.log
 ## ------------------------------------------------------------------------------------------------
 event bacnet_npdu_header%(c: connection,
                           is_orig: bool,
                           bvlc_function: count,
-                          npdu_message_type: count%);
+                          npdu_message_type: count,
+                          dnet: count,
+                          dlen: count,
+                          dadr: string,
+                          snet: count,
+                          slen: count,
+                          sadr: string,
+                          hop_count: count%);
 
 ## ------------------------------------------bacnet-i-am-------------------------------------------
 ## Event Description:

@@ -284,22 +284,22 @@ event bacnet_npdu_header(c: connection,
 
     if (has_destination)
     {
-        bacnet_log$dnet = dnet;
-        bacnet_log$dlen = dlen;
+        bacnet_log$npdu_dnet = dnet;
+        bacnet_log$npdu_dlen = dlen;
         if (dlen > 0)
-            bacnet_log$dadr = dadr;
+            bacnet_log$npdu_dadr = dadr;
     }
 
     if (has_source)
     {
-        bacnet_log$snet = snet;
-        bacnet_log$slen = slen;
+        bacnet_log$npdu_snet = snet;
+        bacnet_log$npdu_slen = slen;
         if (slen > 0)
-            bacnet_log$sadr = sadr;
+            bacnet_log$npdu_sadr = sadr;
     }
 
     if (has_hop_count)
-        bacnet_log$hop_count = hop_count;
+        bacnet_log$npdu_hop_count = hop_count;
 
     Log::write(LOG_BACNET, bacnet_log);
 }

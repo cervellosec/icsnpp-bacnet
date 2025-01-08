@@ -361,35 +361,8 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
         default -> apdu_exists:         APDU_Header(is_orig, bvlc_function);
     };
 } &let {
-    has_destination: bool = ((npdu_control & 0x20) >> 5) == 1;
-    has_source: bool = ((npdu_control & 0x08) >> 3) == 1;
     has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
-
-    dnet: uint16 = has_destination ? destination_exists.DNET : 0xFFFF;
-    dlen: uint8 = has_destination ? destination_exists.DLEN : 0xFF;
-    snet: uint16 = has_source ? source_exists.SNET : 0xFFFF;
-    slen: uint8 = has_source ? source_exists.SLEN : 0xFF;
-    hop_count_val: uint8 = has_hop_count ? hop_count_value : 0xFF;
-    message_type: uint8 = ((npdu_control & 0x80) >> 7) == 1 ? npdu_message_exists.message_type : 0;
-
-    overview: bool = case has_destination of {
-        true -> case has_source of {
-            true -> $context.flow.process_bacnet_npdu_header_both(is_orig, bvlc_function, message_type, 
-                dnet, dlen, destination_exists.DADR,
-                snet, slen, source_exists.SADR, 
-                hop_count_val);
-            false -> $context.flow.process_bacnet_npdu_header_dest(is_orig, bvlc_function, message_type,
-                                                                 dnet, dlen, destination_exists.DADR,
-                                                                 hop_count_val);
-        };
-        false -> case has_source of {
-            true -> $context.flow.process_bacnet_npdu_header_src(is_orig, bvlc_function, message_type,
-                                                               snet, slen, source_exists.SADR,
-                                                               hop_count_val);
-            false -> $context.flow.process_bacnet_npdu_header_none(is_orig, bvlc_function, message_type,
-                                                                 hop_count_val);
-        };
-    };
+    overview: bool = $context.flow.process_bacnet_npdu_header_both(is_orig, bvlc_function, message_type, 0, destination_exists, source_exists, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
 ## ------------------------------------------NPDU-Message------------------------------------------
@@ -403,9 +376,9 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
 ## ------------------------------------------------------------------------------------------------
 type NPDU_Message(is_orig: bool, bvlc_function: uint8) = record {
     npdu_message_type   : uint8;
-    destination_address : bytestring &restofdata;
+    npdu_message_data   : bytestring &restofdata;
 } &let {
-    message_type: uint8 = npdu_message_type;
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, npdu_message_type, npdu_message_data, 0, 0, false, 0xFF);
 };
 
 ## ----------------------------------------NPDU-Destination----------------------------------------

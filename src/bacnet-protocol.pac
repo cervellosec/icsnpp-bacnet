@@ -362,7 +362,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     };
 } &let {
     has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
-    overview: bool = $context.flow.process_bacnet_npdu_header_both(is_orig, bvlc_function, message_type, 0, destination_exists, source_exists, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, message_type, 0, destination_exists, source_exists, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
 ## ------------------------------------------NPDU-Message------------------------------------------

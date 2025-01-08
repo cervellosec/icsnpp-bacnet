@@ -362,7 +362,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     };
 } &let {
     has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
-    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, message_type, 0, destination_exists, source_exists, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, npdu_message_exists, destination_exists, source_exists, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
 ## ------------------------------------------NPDU-Message------------------------------------------
@@ -374,12 +374,10 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function, NPDU Message Type, and Destination Network Address to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type NPDU_Message(is_orig: bool, bvlc_function: uint8) = record {
+type NPDU_Message(is_orig: bool) = record {
     npdu_message_type   : uint8;
     npdu_message_data   : bytestring &restofdata;
-} &let {
-    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, npdu_message_type, npdu_message_data, 0, 0, false, 0xFF);
-};
+}
 
 ## ----------------------------------------NPDU-Destination----------------------------------------
 ## Message Description:

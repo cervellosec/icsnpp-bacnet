@@ -236,6 +236,7 @@ event bacnet_apdu_header(c: connection,
 event bacnet_npdu_header(c: connection,
                          is_orig: bool,
                          bvlc_function: count,
+                         has_npdu_message: bool,
                          npdu_message_type: count,
                          npdu_message_data: string,
                          has_destination: bool,
@@ -273,11 +274,14 @@ event bacnet_npdu_header(c: connection,
     bacnet_log$bvlc_function = bvlc_functions[bvlc_function];
 
     bacnet_log$pdu_type = "NPDU";
-    bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
 
-    if (npdu_message_data != "")
-        bacnet_log$npdu_message_data = npdu_message_data;
-    
+    if (has_npdu_message) {
+        bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+
+        if (npdu_message_data != "")
+            bacnet_log$npdu_message_data = npdu_message_data;
+    }
+
     if (has_destination)
     {
         bacnet_log$dnet = dnet;

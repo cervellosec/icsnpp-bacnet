@@ -361,8 +361,12 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
         default -> apdu_exists:         APDU_Header(is_orig, bvlc_function);
     };
 } &let {
+    has_npdu_message: bool = ((npdu_control & 0x80) >> 7) == 1;
+    has_destination: bool = ((npdu_control & 0x20) >> 5) == 1;
+    has_source: bool = ((npdu_control & 0x08) >> 3) == 1;
     has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
-    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, npdu_message_exists, destination_exists, source_exists, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
+
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
 ## ------------------------------------------NPDU-Message------------------------------------------

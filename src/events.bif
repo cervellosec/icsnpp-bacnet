@@ -50,7 +50,7 @@ event bacnet_npdu_header%(c: connection,
                           is_orig: bool,
                           bvlc_function: count,
                           npdu_message_type: count,
-                          npdu_message_data: string);
+                          npdu_message_data: string%);
 
 ## ------------------------------------------bacnet-i-am-------------------------------------------
 ## Event Description:

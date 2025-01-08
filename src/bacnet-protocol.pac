@@ -341,7 +341,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     protocol_version    : uint8 &enforce(protocol_version == 0x01);
     npdu_control        : uint8;
     npdu_message        : case ((npdu_control & 0x80) >> 7) of {
-        1       -> npdu_message_exists: NPDU_Message(is_orig, bvlc_function);
+        1       -> npdu_message_exists: NPDU_Message;
         default -> no_npdu_message:     empty;
     };
     destination         : case ((npdu_control & 0x20) >> 5) of {
@@ -374,7 +374,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function, NPDU Message Type, and Destination Network Address to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type NPDU_Message(is_orig: bool) = record {
+type NPDU_Message = record {
     npdu_message_type   : uint8;
     npdu_message_data   : bytestring &restofdata;
 }

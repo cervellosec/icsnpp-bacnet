@@ -374,9 +374,9 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
 ##      Network Layer Protocol Messages
 ## Message Format:
 ##      - NPDU Message Type:           1 byte     -> Message Type (see npdu_message_types in consts.zeek)
-##      - Destination Network Address  bytestring -> NPDU Destination Network Address.  Currently not used.
+##      - NPDU Message Data:           Variable  -> NPDU Message Data (not fully parsed yet)
 ## Protocol Parsing:
-##      Logs BVLC Function, NPDU Message Type, and Destination Network Address to bacnet.log
+##      Continue with NPDU processing
 ## ------------------------------------------------------------------------------------------------
 type NPDU_Message = record {
     npdu_message_type   : uint8;

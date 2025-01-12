@@ -408,15 +408,15 @@ refine flow BACNET_Flow += {
             {
                 vector<uint16> destination_networks;
                 if (npdu_message) {
-                    if ((npdu_message->npdu_message_type() == BAC_NET_WHO_R) ||
-                        (npdu_message->npdu_message_type() == BAC_NET_IAM_R) ||
-                        (npdu_message->npdu_message_type() == BAC_NET_R_BUSY) ||
-                        (npdu_message->npdu_message_type() == BAC_NET_R_AVA)) {
+                    if ((npdu_message->npdu_message_type() == NET_MSG_WHO_R) ||
+                        (npdu_message->npdu_message_type() == NET_MSG_IAM_R) ||
+                        (npdu_message->npdu_message_type() == NET_MSG_R_BUSY) ||
+                        (npdu_message->npdu_message_type() == NET_MSG_R_AVA)) {
                         destination_networks = npdu_message->destination_networks();
-                    } else if ((npdu_message->npdu_message_type() == BAC_NET_EST_CON) ||
-                               (npdu_message->npdu_message_type() == BAC_NET_DISC_CON) ||
-                               (npdu_message->npdu_message_type() == BAC_NET_NETNR_IS) ||
-                               (npdu_message->npdu_message_type() == BAC_NET_ICB_R)) {
+                    } else if ((npdu_message->npdu_message_type() == NET_MSG_EST_CON) ||
+                               (npdu_message->npdu_message_type() == NET_MSG_DISC_CON) ||
+                               (npdu_message->npdu_message_type() == NET_MSG_NETNR_IS) ||
+                               (npdu_message->npdu_message_type() == NET_MSG_ICB_R)) {
                         destination_networks.push_back(npdu_message->destination_network());
                     }
                 }

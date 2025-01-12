@@ -406,7 +406,7 @@ refine flow BACNET_Flow += {
         %{
             if ( ::bacnet_npdu_header )
             {
-                auto destination_networks = zeek::make_intrusive<zeek::VectorVal>();
+                auto destination_networks = zeek::make_intrusive<zeek::VectorVal>(zeek::GetType<zeek::VectorType>());
                 if (npdu_message) {
                     if ((npdu_message->npdu_message_type() == NET_MSG_WHO_R) ||
                         (npdu_message->npdu_message_type() == NET_MSG_IAM_R) ||

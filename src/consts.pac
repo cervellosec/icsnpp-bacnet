@@ -136,3 +136,30 @@ enum unconfirmed_service_choice
     WRITE_GROUP                             = 0x0A,
     UNCONFIRMED_COV_NOTIFICATION_MULTIPLE   = 0x0B,
 }
+
+############################################################
+####################  NPDU Message Types  ##################
+############################################################
+enum npdu_message_types
+{
+    NET_MSG_WHO_R         = 0x00,
+    NET_MSG_IAM_R         = 0x01,
+    NET_MSG_ICB_R         = 0x02,
+    NET_MSG_REJ           = 0x03,
+    NET_MSG_R_BUSY        = 0x04,
+    NET_MSG_R_AVA         = 0x05,
+    NET_MSG_INIT_RTAB     = 0x06,
+    NET_MSG_INIT_RTAB_ACK = 0x07,
+    NET_MSG_EST_CON       = 0x08,
+    NET_MSG_DISC_CON      = 0x09,
+    NET_MSG_CHALL_REQ     = 0x0A,
+    NET_MSG_SECUR_PAY     = 0x0B,
+    NET_MSG_SECUR_RESP    = 0x0C,
+    NET_MSG_REQ_KEY_UP    = 0x0D,
+    NET_MSG_UPD_KEYSET    = 0x0E,
+    NET_MSG_UPD_DKEY      = 0x0F,
+    NET_MSG_REQ_MKEY      = 0x10,
+    NET_MSG_SET_MKEY      = 0x11,
+    NET_MSG_WHAT_NETNR    = 0x12,
+    NET_MSG_NETNR_IS      = 0x13
+}

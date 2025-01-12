@@ -279,10 +279,14 @@ event bacnet_npdu_header(c: connection,
 
     if (has_npdu_message) {
         bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+
         if (|destination_networks| > 0) {
             bacnet_log$destination_networks = destination_networks;
         }
-        bacnet_log$npdu_message_data = npdu_message_data;
+
+        if (|npdu_message_data| > 0) {
+            bacnet_log$npdu_message_data = npdu_message_data;
+        }
     }
 
     if (has_destination)

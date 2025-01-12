@@ -406,20 +406,20 @@ refine flow BACNET_Flow += {
         %{
             if ( ::bacnet_npdu_header )
             {
-                auto destination_networks = zeek::make_intrusive<zeek::CountVecVal>();
+                auto destination_networks = zeek::make_intrusive<zeek::VectorVal>();
                 if (npdu_message) {
                     if ((npdu_message->npdu_message_type() == NET_MSG_WHO_R) ||
                         (npdu_message->npdu_message_type() == NET_MSG_IAM_R) ||
                         (npdu_message->npdu_message_type() == NET_MSG_R_BUSY) ||
                         (npdu_message->npdu_message_type() == NET_MSG_R_AVA)) {
                         for (int i = 0; i < npdu_message->destination_networks().size(); i++) {
-                            destination_networks->push_back(npdu_message->destination_networks()[i]);
+                            destination_networks->Append(zeek::make_intrusive<zeek::CountVal>(npdu_message->destination_networks()[i]));
                         }
                     } else if ((npdu_message->npdu_message_type() == NET_MSG_EST_CON) ||
                                (npdu_message->npdu_message_type() == NET_MSG_DISC_CON) ||
                                (npdu_message->npdu_message_type() == NET_MSG_NETNR_IS) ||
                                (npdu_message->npdu_message_type() == NET_MSG_ICB_R)) {
-                        destination_networks->push_back(npdu_message->destination_network());
+                        destination_networks->Append(zeek::make_intrusive<zeek::CountVal>(npdu_message->destination_network()));
                     }
                 }
 

@@ -20,28 +20,28 @@ export {
     ################################  BACnet_Header -> bacnet.log  ################################
     ###############################################################################################
     type BACnet_Header: record {
-        ts                      : time      &log;   # Timestamp of event
-        uid                     : string    &log;   # Zeek unique ID for connection
-        id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
-        is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
-        source_h                : addr      &log;   # Source IP Address
-        source_p                : port      &log;   # Source Port
-        destination_h           : addr      &log;   # Destination IP Address
-        destination_p           : port      &log;   # Destination Port
-        bvlc_function           : string    &log;   # BVLC function (see bvlc_functions)
-        pdu_type                : string    &log;   # APDU type (see apdu_types)
-        pdu_service             : string    &log;   # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
-        invoke_id               : count     &log;   # Invoke ID
-        result_code             : string    &log;   # See (abort_reasons, reject_reasons, and error_codes)
-        destination_networks    : count[]   &log &optional;   # Destination Network Number(s)
-        npdu_message_data       : string    &log &optional;   # NPDU Message Data
-        npdu_dnet               : count     &log &optional;   # NPDU Destination Network Number
-        npdu_dlen               : count     &log &optional;   # NPDU Destination Length
-        npdu_dadr               : string    &log &optional;   # NPDU Destination Address
-        npdu_snet               : count     &log &optional;   # NPDU Source Network Number
-        npdu_slen               : count     &log &optional;   # NPDU Source Length
-        npdu_sadr               : string    &log &optional;   # NPDU Source Address
-        npdu_hop_count          : count     &log &optional;   # NPDU Hop Count
+        ts                      : time            &log;             # Timestamp of event
+        uid                     : string          &log;             # Zeek unique ID for connection
+        id                      : conn_id         &log;             # Zeek connection struct (addresses and ports)
+        is_orig                 : bool            &log;             # the message came from the originator/client or the responder/server
+        source_h                : addr            &log;             # Source IP Address
+        source_p                : port            &log;             # Source Port
+        destination_h           : addr            &log;             # Destination IP Address
+        destination_p           : port            &log;             # Destination Port
+        bvlc_function           : string          &log;             # BVLC function (see bvlc_functions)
+        pdu_type                : string          &log;             # APDU type (see apdu_types)
+        pdu_service             : string          &log;             # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
+        invoke_id               : count           &log;             # Invoke ID
+        result_code             : string          &log;             # See (abort_reasons, reject_reasons, and error_codes)
+        destination_networks    : vector of count &log &optional;   # Vector of Destination Network Number
+        npdu_message_data       : string          &log &optional;   # NPDU Message Data
+        npdu_dnet               : count           &log &optional;   # NPDU Destination Network Number
+        npdu_dlen               : count           &log &optional;   # NPDU Destination Length
+        npdu_dadr               : string          &log &optional;   # NPDU Destination Address
+        npdu_snet               : count           &log &optional;   # NPDU Source Network Number
+        npdu_slen               : count           &log &optional;   # NPDU Source Length
+        npdu_sadr               : string          &log &optional;   # NPDU Source Address
+        npdu_hop_count          : count           &log &optional;   # NPDU Hop Count
     };
 
     global log_bacnet: event(rec: BACnet_Header);

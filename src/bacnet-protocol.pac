@@ -369,19 +369,52 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
+const BAC_NET_WHO_R: uint8         = 0x00;
+const BAC_NET_IAM_R: uint8         = 0x01;
+const BAC_NET_ICB_R: uint8         = 0x02;
+const BAC_NET_REJ: uint8           = 0x03;
+const BAC_NET_R_BUSY: uint8        = 0x04;
+const BAC_NET_R_AVA: uint8         = 0x05;
+const BAC_NET_INIT_RTAB: uint8     = 0x06;
+const BAC_NET_INIT_RTAB_ACK: uint8 = 0x07;
+const BAC_NET_EST_CON: uint8       = 0x08;
+const BAC_NET_DISC_CON: uint8      = 0x09;
+const BAC_NET_CHALL_REQ: uint8     = 0x0A;
+const BAC_NET_SECUR_PAY: uint8     = 0x0B;
+const BAC_NET_SECUR_RESP: uint8    = 0x0C;
+const BAC_NET_REQ_KEY_UP: uint8    = 0x0D;
+const BAC_NET_UPD_KEYSET: uint8    = 0x0E;
+const BAC_NET_UPD_DKEY: uint8      = 0x0F;
+const BAC_NET_REQ_MKEY: uint8      = 0x10;
+const BAC_NET_SET_MKEY: uint8      = 0x11;
+const BAC_NET_WHAT_NETNR: uint8    = 0x12;
+const BAC_NET_NETNR_IS: uint8      = 0x13;
+
 ## ------------------------------------------NPDU-Message------------------------------------------
 ## Message Description:
 ##      Network Layer Protocol Messages
 ## Message Format:
 ##      - NPDU Message Type:           1 byte     -> Message Type (see npdu_message_types in consts.zeek)
-##      - NPDU Message Data:           Variable  -> NPDU Message Data (not fully parsed yet)
+##      - Destination Network(s):      Variable   -> Destination Network Number(s)
+##      - NPDU Message Data:           Variable   -> NPDU Message Data (not fully parsed yet)
 ## Protocol Parsing:
 ##      Continue with NPDU processing
 ## ------------------------------------------------------------------------------------------------
 type NPDU_Message = record {
     npdu_message_type   : uint8;
-    npdu_message_data   : bytestring &restofdata;
-}
+    message_data        : case npdu_message_type of {
+        BAC_NET_WHO_R,
+        BAC_NET_IAM_R,
+        BAC_NET_R_BUSY,
+        BAC_NET_R_AVA      -> destination_networks: uint16[] &until($input.length() == 0);
+        BAC_NET_EST_CON,
+        BAC_NET_DISC_CON,
+        BAC_NET_NETNR_IS,
+        BAC_NET_ICB_R      -> destination_network: uint16;
+        default            -> no_destination_network: empty;
+    };
+    npdu_message_data: bytestring &restofdata;
+};
 
 ## ----------------------------------------NPDU-Destination----------------------------------------
 ## Message Description:

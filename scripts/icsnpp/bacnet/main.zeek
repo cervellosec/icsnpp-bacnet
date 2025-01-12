@@ -33,6 +33,7 @@ export {
         pdu_service             : string    &log;   # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
         invoke_id               : count     &log;   # Invoke ID
         result_code             : string    &log;   # See (abort_reasons, reject_reasons, and error_codes)
+        destination_networks    : count[]   &log &optional;   # Destination Network Number(s)
         npdu_message_data       : string    &log &optional;   # NPDU Message Data
         npdu_dnet               : count     &log &optional;   # NPDU Destination Network Number
         npdu_dlen               : count     &log &optional;   # NPDU Destination Length
@@ -238,6 +239,7 @@ event bacnet_npdu_header(c: connection,
                          bvlc_function: count,
                          has_npdu_message: bool,
                          npdu_message_type: count,
+                         destination_networks: count[],
                          npdu_message_data: string,
                          has_destination: bool,
                          dnet: count,
@@ -277,6 +279,9 @@ event bacnet_npdu_header(c: connection,
 
     if (has_npdu_message) {
         bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+        if (|destination_networks| > 0) {
+            bacnet_log$destination_networks = destination_networks;
+        }
         bacnet_log$npdu_message_data = npdu_message_data;
     }
 

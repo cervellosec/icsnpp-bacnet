@@ -406,12 +406,28 @@ refine flow BACNET_Flow += {
         %{
             if ( ::bacnet_npdu_header )
             {
+                vector<uint16> destination_networks;
+                if (npdu_message) {
+                    if ((npdu_message->npdu_message_type() == BAC_NET_WHO_R) ||
+                        (npdu_message->npdu_message_type() == BAC_NET_IAM_R) ||
+                        (npdu_message->npdu_message_type() == BAC_NET_R_BUSY) ||
+                        (npdu_message->npdu_message_type() == BAC_NET_R_AVA)) {
+                        destination_networks = npdu_message->destination_networks();
+                    } else if ((npdu_message->npdu_message_type() == BAC_NET_EST_CON) ||
+                               (npdu_message->npdu_message_type() == BAC_NET_DISC_CON) ||
+                               (npdu_message->npdu_message_type() == BAC_NET_NETNR_IS) ||
+                               (npdu_message->npdu_message_type() == BAC_NET_ICB_R)) {
+                        destination_networks.push_back(npdu_message->destination_network());
+                    }
+                }
+
                 zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
                                                            bvlc_function,
                                                            npdu_message ? true : false,
                                                            npdu_message ? npdu_message->npdu_message_type() : 0xFF,
+                                                           destination_networks,
                                                            npdu_message ? zeek::make_intrusive<zeek::StringVal>(get_string2(npdu_message->npdu_message_data())) : zeek::make_intrusive<zeek::StringVal>(""),
                                                            destination ? true : false,
                                                            destination ? destination->DNET() : 0xFFFF,

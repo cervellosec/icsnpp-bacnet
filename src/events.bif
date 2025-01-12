@@ -43,7 +43,7 @@ event bacnet_apdu_header%(c: connection,
 ##      - bvlc_function:        count       -> BVLC Function (see bvlc_functions in consts.pac)
 ##      - has_npdu_message:     bool        -> If NPDU Message exists
 ##      - npdu_message_type:    count       -> NPDU Message Type (see npdu_message_types in consts.zeek)
-##      - destination_networks: count[]     -> Destination Network Number(s)
+##      - destination_networks: index_vec   -> Vector of Destination Network Number
 ##      - npdu_message_data:    string      -> NPDU Message Data
 ##      - has_destination:      bool        -> If NPDU Destination exists
 ##      - dnet:                 count       -> NPDU Destination Network Number
@@ -63,7 +63,7 @@ event bacnet_npdu_header%(c: connection,
                           bvlc_function: count,
                           has_npdu_message: bool,
                           npdu_message_type: count,
-                          destination_networks: count_vec,
+                          destination_networks: index_vec,
                           npdu_message_data: string,
                           has_destination: bool,
                           dnet: count,

@@ -412,7 +412,7 @@ refine flow BACNET_Flow += {
                         (npdu_message->npdu_message_type() == NET_MSG_IAM_R) ||
                         (npdu_message->npdu_message_type() == NET_MSG_R_BUSY) ||
                         (npdu_message->npdu_message_type() == NET_MSG_R_AVA)) {
-                        for (const auto& network : npdu_message->destination_networks()) {
+                        for (const auto& network : *npdu_message->destination_networks()) {
                             destination_networks->Append(zeek::make_intrusive<zeek::CountVal>(network));
                         }
                     } else if ((npdu_message->npdu_message_type() == NET_MSG_EST_CON) ||

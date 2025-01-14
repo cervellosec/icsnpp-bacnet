@@ -341,7 +341,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     protocol_version    : uint8 &enforce(protocol_version == 0x01);
     npdu_control        : uint8;
     npdu_message        : case ((npdu_control & 0x80) >> 7) of {
-        1       -> npdu_message_exists: NPDU_Message(is_orig, bvlc_function);
+        1       -> npdu_message_exists: NPDU_Message;
         default -> no_npdu_message:     empty;
     };
     destination         : case ((npdu_control & 0x20) >> 5) of {
@@ -360,22 +360,39 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
         1       -> no_apdu:             bytestring &restofdata;
         default -> apdu_exists:         APDU_Header(is_orig, bvlc_function);
     };
-}
+} &let {
+    has_npdu_message: bool = ((npdu_control & 0x80) >> 7) == 1;
+    has_destination: bool = ((npdu_control & 0x20) >> 5) == 1;
+    has_source: bool = ((npdu_control & 0x08) >> 3) == 1;
+    has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
+
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
+};
 
 ## ------------------------------------------NPDU-Message------------------------------------------
 ## Message Description:
 ##      Network Layer Protocol Messages
 ## Message Format:
 ##      - NPDU Message Type:           1 byte     -> Message Type (see npdu_message_types in consts.zeek)
-##      - Destination Network Address  bytestring -> NPDU Destination Network Address.  Currently not used.
+##      - Destination Network(s):      Variable   -> Destination Network Number(s)
+##      - NPDU Message Data:           Variable   -> NPDU Message Data (not fully parsed yet)
 ## Protocol Parsing:
-##      Logs BVLC Function, NPDU Message Type, and Destination Network Address to bacnet.log
+##      Continue with NPDU processing
 ## ------------------------------------------------------------------------------------------------
-type NPDU_Message(is_orig: bool, bvlc_function: uint8) = record {
+type NPDU_Message = record {
     npdu_message_type   : uint8;
-    destination_address : bytestring &restofdata;
-} &let {
-    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, npdu_message_type);
+    message_data        : case npdu_message_type of {
+        NET_MSG_WHO_R,
+        NET_MSG_IAM_R,
+        NET_MSG_R_BUSY,
+        NET_MSG_R_AVA      -> destination_networks:   uint16[] &until($input.length() == 0);
+        NET_MSG_EST_CON,
+        NET_MSG_DISC_CON,
+        NET_MSG_NETNR_IS,
+        NET_MSG_ICB_R      -> destination_network:    uint16;
+        default            -> no_destination_network: empty;
+    };
+    npdu_message_data: bytestring &restofdata;
 };
 
 ## ----------------------------------------NPDU-Destination----------------------------------------

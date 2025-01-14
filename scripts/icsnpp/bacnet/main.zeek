@@ -20,19 +20,28 @@ export {
     ################################  BACnet_Header -> bacnet.log  ################################
     ###############################################################################################
     type BACnet_Header: record {
-        ts                      : time      &log;   # Timestamp of event
-        uid                     : string    &log;   # Zeek unique ID for connection
-        id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
-        is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
-        source_h                : addr      &log;   # Source IP Address
-        source_p                : port      &log;   # Source Port
-        destination_h           : addr      &log;   # Destination IP Address
-        destination_p           : port      &log;   # Destination Port
-        bvlc_function           : string    &log;   # BVLC function (see bvlc_functions)
-        pdu_type                : string    &log;   # APDU type (see apdu_types)
-        pdu_service             : string    &log;   # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
-        invoke_id               : count     &log;   # Invoke ID
-        result_code             : string    &log;   # See (abort_reasons, reject_reasons, and error_codes)
+        ts                      : time            &log;             # Timestamp of event
+        uid                     : string          &log;             # Zeek unique ID for connection
+        id                      : conn_id         &log;             # Zeek connection struct (addresses and ports)
+        is_orig                 : bool            &log;             # the message came from the originator/client or the responder/server
+        source_h                : addr            &log;             # Source IP Address
+        source_p                : port            &log;             # Source Port
+        destination_h           : addr            &log;             # Destination IP Address
+        destination_p           : port            &log;             # Destination Port
+        bvlc_function           : string          &log;             # BVLC function (see bvlc_functions)
+        pdu_type                : string          &log;             # APDU type (see apdu_types)
+        pdu_service             : string          &log;             # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
+        invoke_id               : count           &log;             # Invoke ID
+        result_code             : string          &log;             # See (abort_reasons, reject_reasons, and error_codes)
+        destination_networks    : vector of count &log &optional;   # Vector of Destination Network Number
+        npdu_message_data       : string          &log &optional;   # NPDU Message Data
+        npdu_dnet               : count           &log &optional;   # NPDU Destination Network Number
+        npdu_dlen               : count           &log &optional;   # NPDU Destination Length
+        npdu_dadr               : string          &log &optional;   # NPDU Destination Address
+        npdu_snet               : count           &log &optional;   # NPDU Source Network Number
+        npdu_slen               : count           &log &optional;   # NPDU Source Length
+        npdu_sadr               : string          &log &optional;   # NPDU Source Address
+        npdu_hop_count          : count           &log &optional;   # NPDU Hop Count
     };
 
     global log_bacnet: event(rec: BACnet_Header);
@@ -228,7 +237,20 @@ event bacnet_apdu_header(c: connection,
 event bacnet_npdu_header(c: connection,
                          is_orig: bool,
                          bvlc_function: count,
-                         npdu_message_type: count){
+                         has_npdu_message: bool,
+                         npdu_message_type: count,
+                         destination_networks: index_vec,
+                         npdu_message_data: string,
+                         has_destination: bool,
+                         dnet: count,
+                         dlen: count,
+                         dadr: string,
+                         has_source: bool,
+                         snet: count,
+                         slen: count,
+                         sadr: string,
+                         has_hop_count: bool,
+                         hop_count: count){
 
     set_service(c);
     local bacnet_log: BACnet_Header;
@@ -254,7 +276,35 @@ event bacnet_npdu_header(c: connection,
     bacnet_log$bvlc_function = bvlc_functions[bvlc_function];
 
     bacnet_log$pdu_type = "NPDU";
-    bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+
+    if (has_npdu_message) {
+        bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+
+        if (|destination_networks| > 0) {
+            bacnet_log$destination_networks = destination_networks;
+        }
+
+        if (|npdu_message_data| > 0) {
+            bacnet_log$npdu_message_data = npdu_message_data;
+        }
+    }
+
+    if (has_destination)
+    {
+        bacnet_log$npdu_dnet = dnet;
+        bacnet_log$npdu_dlen = dlen;
+        bacnet_log$npdu_dadr = dadr;
+    }
+
+    if (has_source)
+    {
+        bacnet_log$npdu_snet = snet;
+        bacnet_log$npdu_slen = slen;
+        bacnet_log$npdu_sadr = sadr;
+    }
+
+    if (has_hop_count)
+        bacnet_log$npdu_hop_count = hop_count;
 
     Log::write(LOG_BACNET, bacnet_log);
 }

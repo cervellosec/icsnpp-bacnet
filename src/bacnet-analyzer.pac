@@ -391,18 +391,56 @@ refine flow BACNET_Flow += {
     ## General BACnet NPDU Message Event Generation:
     ##      - bvlc_function       -> BVLC Function
     ##          + Matches bvlc_functions in consts.zeek
+    ##      - has_npdu_message    -> If NPDU Message exists
     ##      - npdu_message_type   -> NPDU Message Type
     ##          + Matches npdu_message_types in consts.zeek
+    ##      - npdu_message_data   -> NPDU Message Data
+    ##      - destination         -> NPDU Destination
+    ##          + NPDU_Destination record
+    ##      - source              -> NPDU Source
+    ##          + NPDU_Source record
+    ##      - has_hop_count       -> If NPDU Hop Count exists
+    ##      - hop_count           -> NPDU Hop Count
     ## ------------------------------------------------------------------------------------------------
-    function process_bacnet_npdu_header(is_orig: bool, bvlc_function: uint8, npdu_message_type: uint8): bool
+    function process_bacnet_npdu_header(is_orig: bool, bvlc_function: uint8, npdu_message: NPDU_Message, destination: NPDU_Destination, source: NPDU_Source, has_hop_count: bool, hop_count: uint8): bool
         %{
             if ( ::bacnet_npdu_header )
             {
+                auto destination_networks = zeek::make_intrusive<zeek::VectorVal>(zeek::id::index_vec);
+                if (npdu_message) {
+                    if ((npdu_message->npdu_message_type() == NET_MSG_WHO_R) ||
+                        (npdu_message->npdu_message_type() == NET_MSG_IAM_R) ||
+                        (npdu_message->npdu_message_type() == NET_MSG_R_BUSY) ||
+                        (npdu_message->npdu_message_type() == NET_MSG_R_AVA)) {
+                        for (const auto& network : *npdu_message->destination_networks()) {
+                            destination_networks->Append(zeek::make_intrusive<zeek::CountVal>(network));
+                        }
+                    } else if ((npdu_message->npdu_message_type() == NET_MSG_EST_CON) ||
+                               (npdu_message->npdu_message_type() == NET_MSG_DISC_CON) ||
+                               (npdu_message->npdu_message_type() == NET_MSG_NETNR_IS) ||
+                               (npdu_message->npdu_message_type() == NET_MSG_ICB_R)) {
+                        destination_networks->Append(zeek::make_intrusive<zeek::CountVal>(npdu_message->destination_network()));
+                    }
+                }
+
                 zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
                                                            bvlc_function,
-                                                           npdu_message_type);
+                                                           npdu_message ? true : false,
+                                                           npdu_message ? npdu_message->npdu_message_type() : 0xFF,
+                                                           destination_networks,
+                                                           npdu_message ? zeek::make_intrusive<zeek::StringVal>(get_string2(npdu_message->npdu_message_data())) : zeek::make_intrusive<zeek::StringVal>(""),
+                                                           destination ? true : false,
+                                                           destination ? destination->DNET() : 0xFFFF,
+                                                           destination ? destination->DLEN() : 0xFF,
+                                                           destination ? zeek::make_intrusive<zeek::StringVal>(get_string2(destination->DADR())) : zeek::make_intrusive<zeek::StringVal>(""),
+                                                           source ? true : false,
+                                                           source ? source->SNET() : 0xFFFF,
+                                                           source ? source->SLEN() : 0xFF,
+                                                           source ? zeek::make_intrusive<zeek::StringVal>(get_string2(source->SADR())) : zeek::make_intrusive<zeek::StringVal>(""),
+                                                           has_hop_count,
+                                                           hop_count);
             }
             return true;
         %}

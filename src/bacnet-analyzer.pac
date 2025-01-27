@@ -9,6 +9,10 @@
 
 %extern{
     #include "zeek/file_analysis/Manager.h"
+    #include <random>
+    #include <sstream>
+    #include <chrono>
+    #include <iomanip>
 %}
 
 %header{
@@ -92,6 +96,30 @@
         }
     }BACnetTime;
 
+    class RandomIdGenerator {
+        private:
+            const uint64_t nanos_;
+            const std::seed_seq seed_;
+            std::mt19937_64 gen_;
+            std::uniform_int_distribution<uint64_t> dis_;
+
+        public:
+            RandomIdGenerator() :
+                nanos(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
+                seed({std::random_device()(), nanos & 0xFFFFFFFF, (nanos >> 32) & 0xFFFFFFFF}),
+                gen_(seed_),
+                dis_(0, UINT64_MAX) {}
+
+            std::string operator()() {
+                std::stringstream ss;
+                ss << std::hex << std::setfill('0')
+                   << std::setw(16) << dis_(gen_) 
+                   << std::setw(16) << dis_(gen_);
+
+                return ss.str();
+            }
+    }
+
     int32 get_signed(const_bytestring data);
     uint32 get_unsigned(const_bytestring data);
     float get_float(const_bytestring data);
@@ -100,6 +128,8 @@
     string get_string2(const_bytestring data);
 
     string parse_tag(uint8 tag_num, uint8 tag_class, const_bytestring data, uint32 tag_length, uint32 tag_length_a);
+
+    std::string generate_random_id();
 
     %}
 
@@ -249,6 +279,11 @@
         return str;
     }
 
+    std::string generate_random_id() {
+        static thread_local RandomIdGenerator id_generator;
+        return id_generator();
+    }
+
     %}
 
 
@@ -323,6 +358,13 @@ refine flow BACNET_Flow += {
 
             return const_bytestring(segmented_data_buffer.data(), segmented_data_buffer.size());
         %}
+    
+    function set_packet_id():
+        %{
+            if (${flowunit.packet_id} == "") {
+                ${flowunit.packet_id} = generate_random_id();
+            }
+        %}
 
     ###################################################################################################
     ##################################### GENERAL BACNET MESSAGE ######################################
@@ -347,6 +389,8 @@ refine flow BACNET_Flow += {
     ## ------------------------------------------------------------------------------------------------
     function process_bacnet_apdu_header(is_orig: bool, bvlc_function: uint8, pdu_type: int8, pdu_service: int8, invoke_id: uint8, result_code: int8): bool
         %{
+            set_packet_id();
+
             if ( ::bacnet_apdu_header )
             {
                 zeek::BifEvent::enqueue_bacnet_apdu_header(connection()->zeek_analyzer(),

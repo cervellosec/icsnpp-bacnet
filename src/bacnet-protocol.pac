@@ -9,14 +9,51 @@
 
 %include consts.pac
 
+%header{
+    #include <random>
+    #include <sstream>
+    #include <chrono>
+    #include <iomanip>
+
+    class RandomIdGenerator {
+        private:
+            const uint64_t nanos_;
+            const std::seed_seq seed_;
+            std::mt19937_64 gen_;
+            std::uniform_int_distribution<uint64_t> dis_;
+
+        public:
+            RandomIdGenerator() :
+                nanos(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
+                seed({std::random_device()(), nanos & 0xFFFFFFFF, (nanos >> 32) & 0xFFFFFFFF}),
+                gen_(seed_),
+                dis_(0, UINT64_MAX) {}
+
+            std::string operator()() {
+                std::stringstream ss;
+                ss << std::hex << std::setfill('0')
+                   << std::setw(16) << dis_(gen_) 
+                   << std::setw(16) << dis_(gen_);
+
+                return ss.str();
+            }
+    }
+
+    std::string generate_random_id() {
+        static thread_local RandomIdGenerator id_generator;
+        return id_generator();
+    }
+%}
+
 ###################################################################################################
 #####################################  ZEEK CONNECTION DATA  ######################################
 ###################################################################################################
 
 type BACNET_PDU(is_orig: bool) = record {
     bacnet : BVLC_Header(is_orig);
-
-} &byteorder=bigendian;
+} &byteorder=bigendian &let {
+    packet_id: string = generate_random_id();
+};
 
 ###################################################################################################
 ##################################  END OF ZEEK CONNECTION DATA  ##################################

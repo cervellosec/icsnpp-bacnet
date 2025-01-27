@@ -22,6 +22,7 @@ export {
     type BACnet_Header: record {
         ts                      : time            &log;             # Timestamp of event
         uid                     : string          &log;             # Zeek unique ID for connection
+        packet_id              : string          &log;             # Random ID to link related logs from same packet
         id                      : conn_id         &log;             # Zeek connection struct (addresses and ports)
         is_orig                 : bool            &log;             # the message came from the originator/client or the responder/server
         source_h                : addr            &log;             # Source IP Address
@@ -52,6 +53,7 @@ export {
     type BACnet_Discovery: record {
         ts                      : time      &log;   # Timestamp of event
         uid                     : string    &log;   # Zeek unique ID for connection
+        packet_id              : string    &log;   # Random ID to link related logs from same packet
         id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
         source_h                : addr      &log;   # Source IP Address
@@ -75,6 +77,7 @@ export {
     type BACnet_Property: record {
         ts                      : time      &log;   # Timestamp of event
         uid                     : string    &log;   # Zeek unique ID for connection
+        packet_id              : string    &log;   # Random ID to link related logs from same packet
         id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
         source_h                : addr      &log;   # Source IP Address
@@ -97,6 +100,7 @@ export {
     type BACnet_Device_Control: record {
         ts                      : time      &log;   # Timestamp of event
         uid                     : string    &log;   # Zeek unique ID for connection
+        packet_id              : string    &log;   # Random ID to link related logs from same packet
         id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
         source_h                : addr      &log;   # Source IP Address
@@ -165,6 +169,7 @@ function set_service(c: connection) {
 ###################################################################################################
 event bacnet_apdu_header(c: connection,
                          is_orig: bool,
+                         packet_id: string,
                          bvlc_function: count,
                          pdu_type: count,
                          pdu_service: count,
@@ -177,6 +182,7 @@ event bacnet_apdu_header(c: connection,
     bacnet_log$ts  = network_time();
     bacnet_log$uid = c$uid;
     bacnet_log$id  = c$id;
+    bacnet_log$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -313,9 +319,10 @@ event bacnet_npdu_header(c: connection,
 ################  Defines logging of bacnet_who_is event -> bacnet_discovery.log  #################
 ###################################################################################################
 event bacnet_who_is(c: connection,
-                    is_orig: bool,
-                    low_limit: count,
-                    high_limit: count){
+                     is_orig: bool,
+                     packet_id: string,
+                     low_limit: count,
+                     high_limit: count){
 
     set_service(c);
     local bacnet_discovery: BACnet_Discovery;
@@ -323,6 +330,7 @@ event bacnet_who_is(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -353,6 +361,7 @@ event bacnet_who_is(c: connection,
 ###################################################################################################
 event bacnet_i_am(c: connection,
                   is_orig: bool,
+                  packet_id: string,
                   object_type: count,
                   instance_number: count,
                   max_apdu: count,
@@ -365,6 +374,7 @@ event bacnet_i_am(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -395,6 +405,7 @@ event bacnet_i_am(c: connection,
 ###################################################################################################
 event bacnet_who_has(c: connection,
                      is_orig: bool,
+                     packet_id: string,
                      low_limit: count,
                      high_limit: count,
                      object_type: count,
@@ -407,6 +418,7 @@ event bacnet_who_has(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -447,6 +459,7 @@ event bacnet_who_has(c: connection,
 ###################################################################################################
 event bacnet_i_have(c: connection,
                     is_orig: bool,
+                    packet_id: string,
                     device_object_type: count,
                     device_instance_num: count,
                     object_object_type: count,
@@ -459,6 +472,7 @@ event bacnet_i_have(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -498,6 +512,7 @@ event bacnet_i_have(c: connection,
 ###################################################################################################
 event bacnet_read_property(c: connection,
                            is_orig: bool,
+                           packet_id: string,
                            invoke_id: count,
                            pdu_service: string,
                            object_type: count,
@@ -511,6 +526,7 @@ event bacnet_read_property(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -544,6 +560,7 @@ event bacnet_read_property(c: connection,
 ###################################################################################################
 event bacnet_read_property_ack(c: connection,
                                is_orig: bool,
+                               packet_id: string,
                                invoke_id: count,
                                pdu_service: string,
                                object_type: count,
@@ -558,6 +575,7 @@ event bacnet_read_property_ack(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -627,6 +645,7 @@ event bacnet_read_property_ack(c: connection,
 ###################################################################################################
 event bacnet_write_property(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count,
@@ -641,6 +660,7 @@ event bacnet_write_property(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -710,6 +730,7 @@ event bacnet_write_property(c: connection,
 ###################################################################################################
 event bacnet_property_error(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             pdu_type: count,
                             pdu_service: count,
@@ -721,6 +742,7 @@ event bacnet_property_error(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -747,6 +769,7 @@ event bacnet_property_error(c: connection,
 
 event bacnet_read_range(c: connection,
                         is_orig: bool,
+                        packet_id: string,
                         invoke_id: count,
                         object_type: count,
                         instance_number: count,
@@ -759,6 +782,7 @@ event bacnet_read_range(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -790,6 +814,7 @@ event bacnet_read_range(c: connection,
 
 event bacnet_read_range_ack(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count,
@@ -804,6 +829,7 @@ event bacnet_read_range_ack(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -840,6 +866,7 @@ event bacnet_read_range_ack(c: connection,
 ###################################################################################################
 event bacnet_reinitialize_device(c: connection,
                                  is_orig: bool,
+                                 packet_id: string,
                                  invoke_id: count,
                                  reinitialized_state: count,
                                  password: string){
@@ -850,6 +877,7 @@ event bacnet_reinitialize_device(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
+    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -880,6 +908,7 @@ event bacnet_reinitialize_device(c: connection,
 ###################################################################################################
 event bacnet_device_control_response(c: connection,
                                      is_orig: bool,
+                                     packet_id: string,
                                      invoke_id: count,
                                      pdu_service: count,
                                      pdu_type: count,
@@ -891,6 +920,7 @@ event bacnet_device_control_response(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
+    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -937,6 +967,7 @@ event bacnet_device_control_response(c: connection,
 ###################################################################################################
 event bacnet_device_communication_control(c: connection,
                                           is_orig: bool,
+                                          packet_id: string,
                                           invoke_id: count,
                                           time_duration: count,
                                           enable_disable: count,
@@ -948,6 +979,7 @@ event bacnet_device_communication_control(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
+    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {

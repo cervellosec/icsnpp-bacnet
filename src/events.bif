@@ -17,6 +17,7 @@
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - bvlc_function:        count       -> BVLC Function (see bvlc_functions in consts.pac)
 ##      - pdu_type:             count       -> APDU Type (see apdu_types in consts.pac)
 ##      - pdu_service:          count       -> APDU Service (see unconfirmed_service_choice and 
@@ -28,6 +29,7 @@
 ## ------------------------------------------------------------------------------------------------
 event bacnet_apdu_header%(c: connection,
                           is_orig: bool,
+                          packet_id: string,
                           bvlc_function: count,
                           pdu_type: count,
                           pdu_service: count,
@@ -40,6 +42,7 @@ event bacnet_apdu_header%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - bvlc_function:        count       -> BVLC Function (see bvlc_functions in consts.pac)
 ##      - has_npdu_message:     bool        -> If NPDU Message exists
 ##      - npdu_message_type:    count       -> NPDU Message Type (see npdu_message_types in consts.zeek)
@@ -60,6 +63,7 @@ event bacnet_apdu_header%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_npdu_header%(c: connection,
                           is_orig: bool,
+                          packet_id: string,
                           bvlc_function: count,
                           has_npdu_message: bool,
                           npdu_message_type: count,
@@ -82,6 +86,7 @@ event bacnet_npdu_header%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - object_type:          count       -> Object Type from Device Identifier
 ##      - instance_number:      count       -> Instance Number from Device Identifier
 ##      - max_apdu:             count       -> Max APDU Length Accepted
@@ -92,6 +97,7 @@ event bacnet_npdu_header%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_i_am%(c: connection,
                    is_orig: bool,
+                   packet_id: string,
                    object_type: count,
                    instance_number: count,
                    max_apdu: count,
@@ -104,6 +110,7 @@ event bacnet_i_am%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - low_limit:            count       -> Device Instance Range Low Limit
 ##      - high_limit:           count       -> Device Instance Range High Limit
 ## Default Output:
@@ -111,6 +118,7 @@ event bacnet_i_am%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_who_is%(c: connection,
                      is_orig: bool,
+                     packet_id: string,
                      low_limit: count,
                      high_limit: count%);
 
@@ -120,6 +128,7 @@ event bacnet_who_is%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - device_object_type:   count       -> Object Type from Device Identifier
 ##      - device_instance_num:  count       -> Instance Number from Device Identifier
 ##      - object_object_type:   count       -> Object Type from Object Identifier
@@ -130,6 +139,7 @@ event bacnet_who_is%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_i_have%(c: connection,
                      is_orig: bool,
+                     packet_id: string,
                      device_object_type: count,
                      device_instance_num: count,
                      object_object_type: count,
@@ -142,6 +152,7 @@ event bacnet_i_have%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - low_limit:            count       -> Device Instance Range Low Limit
 ##      - high_limit:           count       -> Device Instance Range High Limit
 ##      - object_type:          count       -> Object Type from Object Identifier
@@ -152,6 +163,7 @@ event bacnet_i_have%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_who_has%(c: connection,
                       is_orig: bool,
+                      packet_id: string,
                       low_limit: count,
                       high_limit: count,
                       object_type: count,
@@ -164,6 +176,7 @@ event bacnet_who_has%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - invoke_id:            count       -> Invoke ID
 ##      - object_type:          count       -> Object Type from Object Identifier
 ##      - instance_number:      count       -> Instance Number from Object Identifier
@@ -174,6 +187,7 @@ event bacnet_who_has%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_read_property%(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             pdu_service: string,
                             object_type: count,
@@ -187,6 +201,7 @@ event bacnet_read_property%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - invoke_id:            count       -> Invoke ID
 ##      - object_type:          count       -> Object Type from Object Identifier
 ##      - instance_number:      count       -> Instance Number from Object Identifier
@@ -198,6 +213,7 @@ event bacnet_read_property%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_read_property_ack%(c: connection,
                                 is_orig: bool,
+                                packet_id: string,
                                 invoke_id: count,
                                 pdu_service: string,
                                 object_type: count,
@@ -212,6 +228,7 @@ event bacnet_read_property_ack%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - invoke_id:            count       -> Invoke ID
 ##      - object_type:          count       -> Object Type from Object Identifier
 ##      - instance_number:      count       -> Instance Number from Object Identifier
@@ -224,6 +241,7 @@ event bacnet_read_property_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_write_property%(c: connection,
                              is_orig: bool,
+                             packet_id: string,
                              invoke_id: count,
                              object_type: count,
                              instance_number: count,
@@ -238,6 +256,7 @@ event bacnet_write_property%(c: connection,
 ## Event Data:
 ##      - c:                    connection  -> Zeek Connection Struct
 ##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
 ##      - invoke_id:            count       -> Invoke ID
 ##      - pdu_type:             count       -> APDU Type (see apdu_types in consts.pac)
 ##      - pdu_service:          count       -> APDU Type (see apdu_types in consts.pac)
@@ -247,6 +266,7 @@ event bacnet_write_property%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_property_error%(c: connection,
                              is_orig: bool,
+                             packet_id: string,
                              invoke_id: count,
                              pdu_type: count,
                              pdu_service: count,
@@ -262,6 +282,7 @@ event bacnet_property_error%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_read_range%(c: connection,
                          is_orig: bool,
+                         packet_id: string,
                          invoke_id: count,
                          object_type: count,
                          instance_number: count,
@@ -278,6 +299,7 @@ event bacnet_read_range%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_read_range_ack%(c: connection,
                              is_orig: bool,
+                             packet_id: string,
                              invoke_id: count,
                              object_type: count,
                              instance_number: count,
@@ -296,6 +318,7 @@ event bacnet_read_range_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_reinitialize_device%(c: connection,
                                   is_orig: bool,
+                                  packet_id: string,
                                   invoke_id: count,
                                   reinitialized_state: count,
                                   password: string%);
@@ -310,6 +333,7 @@ event bacnet_reinitialize_device%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_device_communication_control%(c: connection,
                                            is_orig: bool,
+                                           packet_id: string,
                                            invoke_id: count,
                                            time_duration: count,
                                            enable_disable: count,
@@ -326,6 +350,7 @@ event bacnet_device_communication_control%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_device_control_response%(c: connection,
                                       is_orig: bool,
+                                      packet_id: string,
                                       invoke_id: count,
                                       pdu_service: count,
                                       pdu_type: count,
@@ -350,6 +375,7 @@ event bacnet_device_control_response%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_unconfirmed_cov_notification%(c: connection,
                                            is_orig: bool,
+                                           packet_id: string,
                                            subscriber_id: count,
                                            initiating_object_type: count,
                                            initiating_instance_number: count,
@@ -367,6 +393,7 @@ event bacnet_unconfirmed_cov_notification%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_unconfirmed_event_notification%(c: connection,
                                              is_orig: bool,
+                                             packet_id: string,
                                              process_identifier: count,
                                              initiating_object_type: count,
                                              initiating_instance_number: count,
@@ -391,6 +418,7 @@ event bacnet_unconfirmed_event_notification%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_unconfirmed_private_transfer%(c: connection,
                                            is_orig: bool,
+                                           packet_id: string,
                                            vendor_id: count,
                                            service_number: count%);
 
@@ -404,6 +432,7 @@ event bacnet_unconfirmed_private_transfer%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_unconfirmed_text_message%(c: connection,
                                        is_orig: bool,
+                                       packet_id: string,
                                        object_type: count,
                                        instance_number: count,
                                        message_priority: count,
@@ -419,6 +448,7 @@ event bacnet_unconfirmed_text_message%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_time_synchronization%(c: connection,
                                    is_orig: bool,
+                                   packet_id: string,
                                    year: count,
                                    month: count,
                                    day: count,
@@ -438,6 +468,7 @@ event bacnet_time_synchronization%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_utc_time_synchronization%(c: connection,
                                        is_orig: bool,
+                                       packet_id: string,
                                        year: count,
                                        month: count,
                                        day: count,
@@ -457,6 +488,7 @@ event bacnet_utc_time_synchronization%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_write_group%(c: connection,
                           is_orig: bool,
+                          packet_id: string,
                           group_number: count,
                           write_priority: count%);
 
@@ -470,6 +502,7 @@ event bacnet_write_group%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_unconfirmed_cov_notification_multiple%(c: connection,
                                                     is_orig: bool,
+                                                    packet_id: string,
                                                     subscriber_id: count,
                                                     initiating_object_type: count,
                                                     initiating_instance_number: count,
@@ -485,6 +518,7 @@ event bacnet_unconfirmed_cov_notification_multiple%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_acknowledge_alarm%(c: connection,
                                 is_orig: bool,
+                                packet_id: string,
                                 invoke_id: count,
                                 acknowledge_process_id: count,
                                 event_object_type: count,
@@ -501,6 +535,7 @@ event bacnet_acknowledge_alarm%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_confirmed_cov_notification%(c: connection,
                                          is_orig: bool,
+                                         packet_id: string,
                                          invoke_id: count,
                                          subscriber_id: count,
                                          initiating_object_type: count,
@@ -519,6 +554,7 @@ event bacnet_confirmed_cov_notification%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_confirmed_event_notification%(c: connection,
                                            is_orig: bool,
+                                           packet_id: string,
                                            invoke_id: count,
                                            process_identifier: count,
                                            initiating_object_type: count,
@@ -544,6 +580,7 @@ event bacnet_confirmed_event_notification%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_get_alarm_summary%(c: connection,
                                 is_orig: bool,
+                                packet_id: string,
                                 invoke_id: count%);
 
 ## ---------------------------------bacnet-get-enrollment-summary----------------------------------
@@ -556,6 +593,7 @@ event bacnet_get_alarm_summary%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_get_enrollment_summary%(c: connection,
                                      is_orig: bool,
+                                     packet_id: string,
                                      invoke_id: count%);
 
 ## --------------------------------------bacnet-subscribe-cov--------------------------------------
@@ -568,6 +606,7 @@ event bacnet_get_enrollment_summary%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_subscribe_cov%(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             subscriber_process_identifier: count,
                             monitored_identifier: count,
@@ -585,6 +624,7 @@ event bacnet_subscribe_cov%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_atomic_read_file%(c: connection,
                                is_orig: bool,
+                               packet_id: string,
                                invoke_id: count,
                                file_object_type: count,
                                file_instance_number: count,
@@ -602,6 +642,7 @@ event bacnet_atomic_read_file%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_atomic_write_file%(c: connection,
                                 is_orig: bool,
+                                packet_id: string,
                                 invoke_id: count,
                                 file_object_type: count,
                                 file_instance_number: count,
@@ -620,6 +661,7 @@ event bacnet_atomic_write_file%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_add_list_element%(c: connection,
                                is_orig: bool,
+                               packet_id: string,
                                invoke_id: count,
                                object_type: count,
                                instance_number: count,
@@ -636,6 +678,7 @@ event bacnet_add_list_element%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_remove_list_element%(c: connection,
                                   is_orig: bool,
+                                  packet_id: string,
                                   invoke_id: count,
                                   object_type: count,
                                   instance_number: count,
@@ -652,6 +695,7 @@ event bacnet_remove_list_element%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_create_object%(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count%);
 
 ## --------------------------------------bacnet-delete-object--------------------------------------
@@ -664,6 +708,7 @@ event bacnet_create_object%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_delete_object%(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count%);
@@ -678,6 +723,7 @@ event bacnet_delete_object%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_read_property_multiple%(c: connection,
                                      is_orig: bool,
+                                     packet_id: string,
                                      invoke_id: count%);
 
 ## ---------------------------------bacnet-write-property-multiple---------------------------------
@@ -690,6 +736,7 @@ event bacnet_read_property_multiple%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_write_property_multiple%(c: connection,
                                       is_orig: bool,
+                                      packet_id: string,
                                       invoke_id: count%);
 
 ## -------------------------------bacnet-confirmed-private-transfer--------------------------------
@@ -702,6 +749,7 @@ event bacnet_write_property_multiple%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_confirmed_private_transfer%(c: connection,
                                          is_orig: bool,
+                                         packet_id: string,
                                          invoke_id: count,
                                          vendor_id: count,
                                          service_number: count%);
@@ -716,6 +764,7 @@ event bacnet_confirmed_private_transfer%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_confirmed_text_message%(c: connection,
                                      is_orig: bool,
+                                     packet_id: string,
                                      invoke_id: count,
                                      object_type: count,
                                      instance_number: count,
@@ -732,6 +781,7 @@ event bacnet_confirmed_text_message%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_vt_open%(c: connection,
                       is_orig: bool,
+                      packet_id: string,
                       invoke_id: count,
                       vt_class :count,
                       local_vt_id: count%);
@@ -746,6 +796,7 @@ event bacnet_vt_open%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_vt_close%(c: connection,
                        is_orig: bool,
+                       packet_id: string,
                        invoke_id: count,
                        remote_vt_id: count%);
 
@@ -759,6 +810,7 @@ event bacnet_vt_close%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_vt_data%(c: connection,
                       is_orig: bool,
+                      packet_id: string,
                       invoke_id: count,
                       vt_session_id: count,
                       vt_data: string,
@@ -774,6 +826,7 @@ event bacnet_vt_data%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_life_safety_operation%(c: connection,
                                     is_orig: bool,
+                                    packet_id: string,
                                     invoke_id: count,
                                     requesting_id: count,
                                     requesting_source: string,
@@ -791,6 +844,7 @@ event bacnet_life_safety_operation%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_subscribe_cov_property%(c: connection,
                                      is_orig: bool,
+                                     packet_id: string,
                                      invoke_id: count,
                                      subscriber_process_id: count,
                                      monitored_identifier_object_type: count,
@@ -809,6 +863,7 @@ event bacnet_subscribe_cov_property%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_get_event_information%(c: connection,
                                     is_orig: bool,
+                                    packet_id: string,
                                     invoke_id: count,
                                     last_object_type: count,
                                     last_instance_number: count%);
@@ -823,6 +878,7 @@ event bacnet_get_event_information%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_get_alarm_summary_ack%(c: connection,
                                     is_orig: bool,
+                                    packet_id: string,
                                     invoke_id: count%);
 
 ## -------------------------------bacnet-get-enrollment-summary-ack--------------------------------
@@ -835,6 +891,7 @@ event bacnet_get_alarm_summary_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_get_enrollment_summary_ack%(c: connection,
                                          is_orig: bool,
+                                         packet_id: string,
                                          invoke_id: count%);
 
 ## ----------------------------------bacnet-atomic-read-file-ack-----------------------------------
@@ -847,6 +904,7 @@ event bacnet_get_enrollment_summary_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_atomic_read_file_ack%(c: connection,
                                    is_orig: bool,
+                                   packet_id: string,
                                    invoke_id: count,
                                    end_of_file: count,
                                    access_type: string,
@@ -864,6 +922,7 @@ event bacnet_atomic_read_file_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_atomic_write_file_ack%(c: connection,
                                     is_orig: bool,
+                                    packet_id: string,
                                     invoke_id: count,
                                     access_type: string,
                                     file_start: count%);
@@ -878,6 +937,7 @@ event bacnet_atomic_write_file_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_create_object_ack%(c: connection,
                                 is_orig: bool,
+                                packet_id: string,
                                 invoke_id: count,
                                 object_type: count,
                                 instance_number: count%);
@@ -892,6 +952,7 @@ event bacnet_create_object_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_read_property_multiple_ack%(c: connection,
                                          is_orig: bool,
+                                         packet_id: string,
                                          invoke_id: count%);
 
 ## -----------------------------bacnet-confirmed-private-transfer-ack------------------------------
@@ -904,6 +965,7 @@ event bacnet_read_property_multiple_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_confirmed_private_transfer_ack%(c: connection,
                                              is_orig: bool,
+                                             packet_id: string,
                                              invoke_id: count,
                                              vendor_id: count,
                                              service_number: count%);
@@ -918,6 +980,7 @@ event bacnet_confirmed_private_transfer_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_vt_open_ack%(c: connection,
                           is_orig: bool,
+                          packet_id: string,
                           invoke_id: count,
                           remote_session_identifier: count%);
 
@@ -931,6 +994,7 @@ event bacnet_vt_open_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_vt_data_ack%(c: connection,
                           is_orig: bool,
+                          packet_id: string,
                           invoke_id: count,
                           data_accepted: count,
                           accepted_count: count%);
@@ -945,6 +1009,7 @@ event bacnet_vt_data_ack%(c: connection,
 ## ------------------------------------------------------------------------------------------------
 event bacnet_get_event_information_ack%(c: connection,
                                         is_orig: bool,
+                                        packet_id: string,
                                         invoke_id: count%);
 
 ###################################################################################################

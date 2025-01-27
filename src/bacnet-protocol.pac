@@ -14,9 +14,10 @@
 ###################################################################################################
 
 type BACNET_PDU(is_orig: bool) = record {
-    packet_id: bytestring &length=0;
-    bacnet : BVLC_Header(is_orig);
-} &byteorder=bigendian;
+    bacnet : BVLC_Header(is_orig, packet_id);
+} &byteorder=bigendian &let {
+    packet_id: string = $context.flow.generate_random_id();
+}
 
 ###################################################################################################
 ##################################  END OF ZEEK CONNECTION DATA  ##################################
@@ -37,24 +38,24 @@ type BACNET_PDU(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Passes BVLC Function to corresponding function type for further processing
 ## ------------------------------------------------------------------------------------------------
-type BVLC_Header(is_orig: bool) = record {
+type BVLC_Header(is_orig: bool, packet_id: string) = record {
     bvlc_type         : uint8 &enforce(bvlc_type == 0x81);
     bvlc_function     : uint8; # No need for &enforce because switch statement below passes processing according to bvlc_function
     length            : uint16;
     body             : case bvlc_function of {
-        BVLC_RESULT                         -> bvlc_result:                         BVLC_Result(is_orig);
-        WRITE_BROADCAST_TABLE               -> write_broadcast:                     Write_Broadcast_Distribution_Table(is_orig);
-        READ_BROADCAST_TABLE                -> read_broadcast:                      Read_Broadcast_Distribution_Table(is_orig);
-        READ_BROADCAST_TABLE_ACK            -> read_broadcast_ack:                  Read_Broadcast_Distribution_Table_ACK(is_orig);
-        FORWARDED_NPDU                      -> forwarded_npdu:                      Forwarded_NPDU(is_orig);
-        REGISTER_FOREIGN_DEVICE             -> register_foreign_device:             Register_Foreign_Device(is_orig);
-        READ_FOREIGN_DEVICE_TABLE           -> read_foreign_device_table:           Read_Foreign_Device_Table(is_orig);
-        READ_FOREIGN_DEVICE_TABLE_ACK       -> read_foreign_device_table_ack:       Read_Foreign_Device_Table_ACK(is_orig);
-        DELETE_FOREIGN_DEVICE_TABLE_ENTRY   -> delete_foreign_device_table_entry:   Delete_Foreign_Device_Table_Entry(is_orig);
-        DISTRIBUTE_BROADCAST_TO_NETWORK     -> distribute_broadcast_to_network:     Distribute_Broadcast_to_Network(is_orig);
-        ORIGINAL_UNICAST_NPDU               -> original_unicast_npdu:               Original_Unicast_NPDU(is_orig);
-        ORIGINAL_BROADCAST_NPDU             -> broadcast_npdu:                      Original_Broadcast_NPDU(is_orig);
-        SECURE_BVLL                         -> secure_bvll:                         Secure_BVLL(is_orig);
+        BVLC_RESULT                         -> bvlc_result:                         BVLC_Result(is_orig, packet_id);
+        WRITE_BROADCAST_TABLE               -> write_broadcast:                     Write_Broadcast_Distribution_Table(is_orig, packet_id);
+        READ_BROADCAST_TABLE                -> read_broadcast:                      Read_Broadcast_Distribution_Table(is_orig, packet_id);
+        READ_BROADCAST_TABLE_ACK            -> read_broadcast_ack:                  Read_Broadcast_Distribution_Table_ACK(is_orig, packet_id);
+        FORWARDED_NPDU                      -> forwarded_npdu:                      Forwarded_NPDU(is_orig, packet_id);
+        REGISTER_FOREIGN_DEVICE             -> register_foreign_device:             Register_Foreign_Device(is_orig, packet_id);
+        READ_FOREIGN_DEVICE_TABLE           -> read_foreign_device_table:           Read_Foreign_Device_Table(is_orig, packet_id);
+        READ_FOREIGN_DEVICE_TABLE_ACK       -> read_foreign_device_table_ack:       Read_Foreign_Device_Table_ACK(is_orig, packet_id);
+        DELETE_FOREIGN_DEVICE_TABLE_ENTRY   -> delete_foreign_device_table_entry:   Delete_Foreign_Device_Table_Entry(is_orig, packet_id);
+        DISTRIBUTE_BROADCAST_TO_NETWORK     -> distribute_broadcast_to_network:     Distribute_Broadcast_to_Network(is_orig, packet_id);
+        ORIGINAL_UNICAST_NPDU               -> original_unicast_npdu:               Original_Unicast_NPDU(is_orig, packet_id    );
+        ORIGINAL_BROADCAST_NPDU             -> broadcast_npdu:                      Original_Broadcast_NPDU(is_orig, packet_id);
+        SECURE_BVLL                         -> secure_bvll:                         Secure_BVLL(is_orig, packet_id);
         default                             -> unknown:                             bytestring &restofdata;
     };
 } &let {
@@ -71,10 +72,10 @@ type BVLC_Header(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x00 for BVLC-Result) and Result Code to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type BVLC_Result(is_orig: bool) = record {
+type BVLC_Result(is_orig: bool, packet_id: string) = record {
     result_code     : uint16;
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x00, -1, -1, 0, result_code);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x00, -1, -1, 0, result_code);
 };
 
 ## -------------------------------Write-Broadcast-Distribution-Table-------------------------------
@@ -87,10 +88,10 @@ type BVLC_Result(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x01 for Write-Broadcast-Distribution-Table) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Write_Broadcast_Distribution_Table(is_orig: bool) = record {
+type Write_Broadcast_Distribution_Table(is_orig: bool, packet_id: string) = record {
     bdt_entries     : BDT_Entry[] &until($input == 0);
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x01, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x01, -1, -1, 0, 0);
 };
 
 ## -------------------------------Read-Broadcast-Distribution-Table--------------------------------
@@ -102,9 +103,9 @@ type Write_Broadcast_Distribution_Table(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x02 for Read-Broadcast-Distribution-Table) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Read_Broadcast_Distribution_Table(is_orig: bool) = record {
+type Read_Broadcast_Distribution_Table(is_orig: bool, packet_id: string) = record {
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x02, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x02, -1, -1, 0, 0);
 };
 
 ## -----------------------------Read-Broadcast-Distribution-Table-ACK------------------------------
@@ -117,10 +118,10 @@ type Read_Broadcast_Distribution_Table(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x03 for Read-Broadcast-Distribution-Table-ACK) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Read_Broadcast_Distribution_Table_ACK(is_orig: bool) = record {
+type Read_Broadcast_Distribution_Table_ACK(is_orig: bool, packet_id: string) = record {
     bdt_entries     : BDT_Entry[] &until($input == 0);
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x03, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x03, -1, -1, 0, 0);
 };
 
 ## -----------------------------------------Forwarded-NPDU-----------------------------------------
@@ -137,10 +138,10 @@ type Read_Broadcast_Distribution_Table_ACK(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Passes BVLC Function (0x04 for Forwarded-NPDU) to NPDU layer for further processing
 ## ------------------------------------------------------------------------------------------------
-type Forwarded_NPDU(is_orig: bool) = record {
+type Forwarded_NPDU(is_orig: bool, packet_id: string) = record {
     bacnet_ip       : uint32;
     bacnet_port     : uint16;
-    npdu            : NPDU_Header(is_orig, 0x04);
+    npdu            : NPDU_Header(is_orig, packet_id, 0x04);
 }
 
 ## ------------------------------------Register-Foreign-Device-------------------------------------
@@ -153,10 +154,10 @@ type Forwarded_NPDU(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x05 for Register-Foreign-Device) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Register_Foreign_Device(is_orig: bool) = record {
+type Register_Foreign_Device(is_orig: bool, packet_id: string) = record {
     ttl             : uint16;
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x05, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x05, -1, -1, 0, 0);
 };
 
 ## -----------------------------------Read-Foreign-Device-Table------------------------------------
@@ -168,9 +169,9 @@ type Register_Foreign_Device(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x06 for Read-Foreign-Device-Table) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Read_Foreign_Device_Table(is_orig: bool) = record {
+type Read_Foreign_Device_Table(is_orig: bool, packet_id: string) = record {
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x06, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x06, -1, -1, 0, 0);
 };
 
 ## ---------------------------------Read-Foreign-Device-Table-ACK----------------------------------
@@ -184,10 +185,10 @@ type Read_Foreign_Device_Table(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x07 for Read-Foreign-Device-Table-ACK) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Read_Foreign_Device_Table_ACK(is_orig: bool) = record {
+type Read_Foreign_Device_Table_ACK(is_orig: bool, packet_id: string) = record {
     fdt_entries     : FDT_Entry[] &until($input == 0);
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x07, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x07, -1, -1, 0, 0);
 };
 
 ## -------------------------------Delete-Foreign-Device-Table-Entry--------------------------------
@@ -200,10 +201,10 @@ type Read_Foreign_Device_Table_ACK(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x08 for Delete-Foreign-Device-Table-Entry) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Delete_Foreign_Device_Table_Entry(is_orig: bool) = record {
+type Delete_Foreign_Device_Table_Entry(is_orig: bool, packet_id: string) = record {
     fdt_entry         : FDT_Entry;
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x08, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x08, -1, -1, 0, 0);
 };
 
 ## --------------------------------Distribute-Broadcast-to-Network---------------------------------
@@ -216,8 +217,8 @@ type Delete_Foreign_Device_Table_Entry(is_orig: bool) = record {
 ##      Passes BVLC Function (0x09 for Distribute-Broadcast-to-Network) to NPDU layer for further
 ##      processing
 ## ------------------------------------------------------------------------------------------------
-type Distribute_Broadcast_to_Network(is_orig: bool) = record {
-    npdu             : NPDU_Header(is_orig, 0x09);
+type Distribute_Broadcast_to_Network(is_orig: bool, packet_id: string) = record {
+    npdu             : NPDU_Header(is_orig, packet_id, 0x09);
 }
 
 ## -------------------------------------Original-Unicast-NPDU--------------------------------------
@@ -229,8 +230,8 @@ type Distribute_Broadcast_to_Network(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Passes BVLC Function (0x0A for Original-Unicast-NPDU) to NPDU layer for further processing
 ## ------------------------------------------------------------------------------------------------
-type Original_Unicast_NPDU(is_orig: bool) = record {
-    npdu             : NPDU_Header(is_orig, 0x0A);
+type Original_Unicast_NPDU(is_orig: bool, packet_id: string) = record {
+    npdu             : NPDU_Header(is_orig, packet_id, 0x0A);
 }
 
 ## ------------------------------------Original-Broadcast-NPDU-------------------------------------
@@ -242,8 +243,8 @@ type Original_Unicast_NPDU(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Passes BVLC Function (0x0B for Original-Broadcast-NPDU) to NPDU layer for further processing
 ## ------------------------------------------------------------------------------------------------
-type Original_Broadcast_NPDU(is_orig: bool) = record {
-    npdu             : NPDU_Header(is_orig, 0x0B);
+type Original_Broadcast_NPDU(is_orig: bool, packet_id: string) = record {
+    npdu             : NPDU_Header(is_orig, packet_id, 0x0B);
 }
 
 ## ------------------------------------------Secure-BVLL-------------------------------------------
@@ -255,10 +256,10 @@ type Original_Broadcast_NPDU(is_orig: bool) = record {
 ## Protocol Parsing:
 ##      Logs BVLC Function (0x0C for Secure-BVLL) to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Secure_BVLL(is_orig: bool) = record {
+type Secure_BVLL(is_orig: bool, packet_id: string) = record {
     data             : bytestring &restofdata;
 } &let {
-    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, 0x0C, -1, -1, 0, 0);
+    deliver: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, 0x0C, -1, -1, 0, 0);
 };
 
 ## -------------------------------------------BDT-Entry--------------------------------------------
@@ -337,7 +338,7 @@ type FDT_Entry = record {
 ## Protocol Parsing:
 ##      Passes BVLC Function to APDU for further processing
 ## ------------------------------------------------------------------------------------------------
-type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
+type NPDU_Header(is_orig: bool, packet_id: string, bvlc_function: uint8) = record {
     protocol_version    : uint8 &enforce(protocol_version == 0x01);
     npdu_control        : uint8;
     npdu_message        : case ((npdu_control & 0x80) >> 7) of {
@@ -358,7 +359,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     };
     apdu                : case ((npdu_control & 0x80) >> 7) of {
         1       -> no_apdu:             bytestring &restofdata;
-        default -> apdu_exists:         APDU_Header(is_orig, bvlc_function);
+        default -> apdu_exists:         APDU_Header(is_orig, packet_id, bvlc_function);
     };
 } &let {
     has_npdu_message: bool = ((npdu_control & 0x80) >> 7) == 1;
@@ -366,7 +367,7 @@ type NPDU_Header(is_orig: bool, bvlc_function: uint8) = record {
     has_source: bool = ((npdu_control & 0x08) >> 3) == 1;
     has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
 
-    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, bvlc_function, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, packet_id, bvlc_function, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
 ## ------------------------------------------NPDU-Message------------------------------------------
@@ -448,17 +449,17 @@ type NPDU_Source = record {
 ## Protocol Parsing:
 ##      Passes Choice Tag and BVLC Function to APDU for further processing
 ## ------------------------------------------------------------------------------------------------
-type APDU_Header(is_orig: bool, bvlc_function: uint8) = record {
+type APDU_Header(is_orig: bool, packet_id: string, bvlc_function: uint8) = record {
     choice_tag      : uint8; # No need for &enforce because switch statement below passes processing according to choice_tag
     body            : case (choice_tag >> 4) of {
-        CONFIRMED_REQUEST   -> confirmed_request:   Confirmed_Request_PDU(is_orig, choice_tag,bvlc_function);
-        UNCONFIRMED_REQUEST -> unconfirmed_request: Unconfirmed_Request_PDU(is_orig, choice_tag,bvlc_function);
-        SIMPLE_ACK          -> simple_ack:          Simple_ACK_PDU(is_orig, choice_tag, bvlc_function);
-        COMPLEX_ACK         -> complex_ack:         Complex_ACK_PDU(is_orig, choice_tag, bvlc_function);
-        SEGMENT_ACK         -> segment_ack:         Segment_ACK_PDU(is_orig, choice_tag,bvlc_function);
-        ERROR_PDU           -> error_pdu:           Error_PDU(is_orig, choice_tag,bvlc_function);
-        REJECT_PDU          -> reject_pdu:          Reject_PDU(is_orig, choice_tag,bvlc_function);
-        ABORT_PDU           -> abort_pdu:           Abort_PDU(is_orig, choice_tag,bvlc_function);
+        CONFIRMED_REQUEST   -> confirmed_request:   Confirmed_Request_PDU(is_orig, packet_id, choice_tag,bvlc_function);
+        UNCONFIRMED_REQUEST -> unconfirmed_request: Unconfirmed_Request_PDU(is_orig, packet_id, choice_tag,bvlc_function);
+        SIMPLE_ACK          -> simple_ack:          Simple_ACK_PDU(is_orig, packet_id, choice_tag, bvlc_function);
+        COMPLEX_ACK         -> complex_ack:         Complex_ACK_PDU(is_orig, packet_id, choice_tag, bvlc_function);
+        SEGMENT_ACK         -> segment_ack:         Segment_ACK_PDU(is_orig, packet_id, choice_tag,bvlc_function);
+        ERROR_PDU           -> error_pdu:           Error_PDU(is_orig, packet_id, choice_tag,bvlc_function);
+        REJECT_PDU          -> reject_pdu:          Reject_PDU(is_orig, packet_id, choice_tag,bvlc_function);
+        ABORT_PDU           -> abort_pdu:           Abort_PDU(is_orig, packet_id, choice_tag,bvlc_function);
         default             -> unknown:             bytestring &restofdata;
     };
 }
@@ -518,7 +519,7 @@ type APDU_Header(is_orig: bool, bvlc_function: uint8) = record {
 ##      Logs BVLC Function, PDU Type, Service Choice, and Invoke ID to bacnet.log
 ##      Passes Confirmed Request Tags to corresponding analyzer in bacnet_analyzer.pac
 ## ------------------------------------------------------------------------------------------------
-type Confirmed_Request_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Confirmed_Request_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     size_information        : uint8;
     invoke_id               : uint8;
     sequence_num            : case ((choice_tag & 0x8) >> 3) of {
@@ -538,36 +539,36 @@ type Confirmed_Request_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint
     service_request_tags: BACnet_Tag[] = $context.flow.process_service_tags(service_tag_buffer) &if (more_follows == 0) ;
 
     deliver: bool = case service_choice of {
-        ACKNOWLEDGE_ALARM               -> $context.flow.process_acknowledge_alarm(is_orig, invoke_id, service_request_tags);
-        CONFIRMED_COV_NOTIFICATION      -> $context.flow.process_confirmed_cov_notification(is_orig, invoke_id, service_request_tags);
-        CONFIRMED_EVENT_NOTIFICATION    -> $context.flow.process_confirmed_event_notification(is_orig, invoke_id, service_request_tags);
-        GET_ALARM_SUMMARY               -> $context.flow.process_get_alarm_summary(is_orig, invoke_id, service_request_tags);
-        GET_ENROLLMENT_SUMMARY          -> $context.flow.process_get_enrollment_summary(is_orig, invoke_id, service_request_tags);
-        SUBSCRIBE_COV                   -> $context.flow.process_subscribe_cov(is_orig, invoke_id, service_request_tags);
-        ATOMIC_READ_FILE                -> $context.flow.process_atomic_read_file(is_orig, invoke_id, service_request_tags);
-        ATOMIC_WRITE_FILE               -> $context.flow.process_atomic_write_file(is_orig, invoke_id, service_request_tags);
-        ADD_LIST_ELEMENT                -> $context.flow.process_add_list_element(is_orig, invoke_id, service_request_tags);
-        REMOVE_LIST_ELEMENT             -> $context.flow.process_remove_list_element(is_orig, invoke_id, service_request_tags);
-        CREATE_OBJECT                   -> $context.flow.process_create_object(is_orig, invoke_id, service_request_tags);
-        DELETE_OBJECT                   -> $context.flow.process_delete_object(is_orig, invoke_id, service_request_tags);
-        READ_PROPERTY                   -> $context.flow.process_read_property(is_orig, invoke_id, service_request_tags);
+        ACKNOWLEDGE_ALARM               -> $context.flow.process_acknowledge_alarm(is_orig, packet_id, invoke_id, service_request_tags);
+        CONFIRMED_COV_NOTIFICATION      -> $context.flow.process_confirmed_cov_notification(is_orig, packet_id, invoke_id, service_request_tags);
+        CONFIRMED_EVENT_NOTIFICATION    -> $context.flow.process_confirmed_event_notification(is_orig, packet_id, invoke_id, service_request_tags);
+        GET_ALARM_SUMMARY               -> $context.flow.process_get_alarm_summary(is_orig, packet_id, invoke_id, service_request_tags);
+        GET_ENROLLMENT_SUMMARY          -> $context.flow.process_get_enrollment_summary(is_orig, packet_id, invoke_id, service_request_tags);
+        SUBSCRIBE_COV                   -> $context.flow.process_subscribe_cov(is_orig, packet_id, invoke_id, service_request_tags);
+        ATOMIC_READ_FILE                -> $context.flow.process_atomic_read_file(is_orig, packet_id, invoke_id, service_request_tags);
+        ATOMIC_WRITE_FILE               -> $context.flow.process_atomic_write_file(is_orig, packet_id, invoke_id, service_request_tags);
+        ADD_LIST_ELEMENT                -> $context.flow.process_add_list_element(is_orig, packet_id, invoke_id, service_request_tags);
+        REMOVE_LIST_ELEMENT             -> $context.flow.process_remove_list_element(is_orig, packet_id, invoke_id, service_request_tags);
+        CREATE_OBJECT                   -> $context.flow.process_create_object(is_orig, packet_id, invoke_id, service_request_tags);
+        DELETE_OBJECT                   -> $context.flow.process_delete_object(is_orig, packet_id, invoke_id, service_request_tags);
+        READ_PROPERTY                   -> $context.flow.process_read_property(is_orig, packet_id, invoke_id, service_request_tags);
         READ_PROPERTY_CONDITIONAL       -> false; # Removed in Version 1 Revision 12
-        READ_PROPERTY_MULTIPLE          -> $context.flow.process_read_property_multiple(is_orig, invoke_id, service_request_tags);
-        WRITE_PROPERTY                  -> $context.flow.process_write_property(is_orig, invoke_id, service_request_tags);
-        WRITE_PROPERTY_MULTIPLE         -> $context.flow.process_write_property_multiple(is_orig, invoke_id, service_request_tags);
-        DEVICE_COMMUNICATION_CONTROL    -> $context.flow.process_device_communication_control(is_orig, invoke_id, service_request_tags);
-        CONFIRMED_PRIVATE_TRANSFER      -> $context.flow.process_confirmed_private_transfer(is_orig, invoke_id, service_request_tags);
-        CONFIRMED_TEXT_MESSAGE          -> $context.flow.process_confirmed_text_message(is_orig, invoke_id, service_request_tags);
-        REINITIALIZE_DEVICE             -> $context.flow.process_reinitialize_device(is_orig, invoke_id, service_request_tags);
-        VT_OPEN                         -> $context.flow.process_vt_open(is_orig, invoke_id, service_request_tags);
-        VT_CLOSE                        -> $context.flow.process_vt_close(is_orig, invoke_id, service_request_tags);
-        VT_DATA                         -> $context.flow.process_vt_data(is_orig, invoke_id, service_request_tags);
+        READ_PROPERTY_MULTIPLE          -> $context.flow.process_read_property_multiple(is_orig, packet_id, invoke_id, service_request_tags);
+        WRITE_PROPERTY                  -> $context.flow.process_write_property(is_orig, packet_id, invoke_id, service_request_tags);
+        WRITE_PROPERTY_MULTIPLE         -> $context.flow.process_write_property_multiple(is_orig, packet_id, invoke_id, service_request_tags);
+        DEVICE_COMMUNICATION_CONTROL    -> $context.flow.process_device_communication_control(is_orig, packet_id, invoke_id, service_request_tags);
+        CONFIRMED_PRIVATE_TRANSFER      -> $context.flow.process_confirmed_private_transfer(is_orig, packet_id, invoke_id, service_request_tags);
+        CONFIRMED_TEXT_MESSAGE          -> $context.flow.process_confirmed_text_message(is_orig, packet_id, invoke_id, service_request_tags);
+        REINITIALIZE_DEVICE             -> $context.flow.process_reinitialize_device(is_orig, packet_id, invoke_id, service_request_tags);
+        VT_OPEN                         -> $context.flow.process_vt_open(is_orig, packet_id, invoke_id, service_request_tags);
+        VT_CLOSE                        -> $context.flow.process_vt_close(is_orig, packet_id, invoke_id, service_request_tags);
+        VT_DATA                         -> $context.flow.process_vt_data(is_orig, packet_id, invoke_id, service_request_tags);
         AUTHENTICATE                    -> false; # Removed in Version 1 Revision 11
         REQUEST_KEY                     -> false; # Removed in Version 1 Revision 11
-        READ_RANGE                      -> $context.flow.process_read_range(is_orig, invoke_id, service_request_tags);
-        LIFE_SAFETY_OPERATION           -> $context.flow.process_life_safety_operation(is_orig, invoke_id, service_request_tags);
-        SUBSCRIBE_COV_PROPERTY          -> $context.flow.process_subscribe_cov_property(is_orig, invoke_id, service_request_tags);
-        GET_EVENT_INFORMATION           -> $context.flow.process_get_event_information(is_orig, invoke_id, service_request_tags);
+        READ_RANGE                      -> $context.flow.process_read_range(is_orig, packet_id, invoke_id, service_request_tags);
+        LIFE_SAFETY_OPERATION           -> $context.flow.process_life_safety_operation(is_orig, packet_id, invoke_id, service_request_tags);
+        SUBSCRIBE_COV_PROPERTY          -> $context.flow.process_subscribe_cov_property(is_orig, packet_id, invoke_id, service_request_tags);
+        GET_EVENT_INFORMATION           -> $context.flow.process_get_event_information(is_orig, packet_id, invoke_id, service_request_tags);
         default                         -> false;
     } &if (more_follows == 0);
     pdu_type: uint8 = choice_tag >> 4;
@@ -590,27 +591,27 @@ type Confirmed_Request_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint
 ##      Logs BVLC Function, PDU Type, and Service Choice to bacnet.log
 ##      Passes Unconfirmed Request Tags to corresponding analyzer in bacnet_analyzer.pac
 ## ------------------------------------------------------------------------------------------------
-type Unconfirmed_Request_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Unconfirmed_Request_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     service_choice              : uint8 &enforce(service_choice <= 0x0b);
     service_request_tags        : BACnet_Tag[] &until($input.length() == 0);
 } &let {
     deliver: bool = case service_choice of {
-        I_AM                                    -> $context.flow.process_i_am(is_orig, service_request_tags);
-        I_HAVE                                  -> $context.flow.process_i_have(is_orig, service_request_tags);
-        UNCONFIRMED_COV_NOTIFICATION            -> $context.flow.process_unconfirmed_cov_notification(is_orig, service_request_tags);
-        UNCONFIRMED_EVENT_NOTIFICATION          -> $context.flow.process_unconfirmed_event_notification(is_orig, service_request_tags);
-        UNCONFIRMED_PRIVATE_TRANSFER            -> $context.flow.process_unconfirmed_private_transfer(is_orig, service_request_tags);
-        UNCONFIRMED_TEXT_MESSAGE                -> $context.flow.process_unconfirmed_text_message(is_orig, service_request_tags);
-        TIME_SYNCHRONIZATION                    -> $context.flow.process_time_synchronization(is_orig, service_request_tags);
-        WHO_HAS                                 -> $context.flow.process_who_has(is_orig, service_request_tags);
-        WHO_IS                                  -> $context.flow.process_who_is(is_orig, service_request_tags);
-        UTC_TIME_SYNCHRONIZATION                -> $context.flow.process_utc_time_synchronization(is_orig, service_request_tags);
-        WRITE_GROUP                             -> $context.flow.process_write_group(is_orig, service_request_tags);
-        UNCONFIRMED_COV_NOTIFICATION_MULTIPLE   -> $context.flow.process_unconfirmed_cov_notification_multiple(is_orig, service_request_tags);
+        I_AM                                    -> $context.flow.process_i_am(is_orig, packet_id, service_request_tags);
+        I_HAVE                                  -> $context.flow.process_i_have(is_orig, packet_id, service_request_tags);
+        UNCONFIRMED_COV_NOTIFICATION            -> $context.flow.process_unconfirmed_cov_notification(is_orig, packet_id, service_request_tags);
+        UNCONFIRMED_EVENT_NOTIFICATION          -> $context.flow.process_unconfirmed_event_notification(is_orig, packet_id, service_request_tags);
+        UNCONFIRMED_PRIVATE_TRANSFER            -> $context.flow.process_unconfirmed_private_transfer(is_orig, packet_id, service_request_tags);
+        UNCONFIRMED_TEXT_MESSAGE                -> $context.flow.process_unconfirmed_text_message(is_orig, packet_id, service_request_tags);
+        TIME_SYNCHRONIZATION                    -> $context.flow.process_time_synchronization(is_orig, packet_id, service_request_tags);
+        WHO_HAS                                 -> $context.flow.process_who_has(is_orig, packet_id, service_request_tags);
+        WHO_IS                                  -> $context.flow.process_who_is(is_orig, packet_id, service_request_tags);
+        UTC_TIME_SYNCHRONIZATION                -> $context.flow.process_utc_time_synchronization(is_orig, packet_id, service_request_tags);
+        WRITE_GROUP                             -> $context.flow.process_write_group(is_orig, packet_id, service_request_tags);
+        UNCONFIRMED_COV_NOTIFICATION_MULTIPLE   -> $context.flow.process_unconfirmed_cov_notification_multiple(is_orig, packet_id, service_request_tags);
         default -> false;
     };
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, service_choice, 0, 0);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, service_choice, 0, 0);
 };
 
 ## -----------------------------------------Simple-ACK-PDU-----------------------------------------
@@ -629,12 +630,12 @@ type Unconfirmed_Request_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: ui
 ## Protocol Parsing:
 ##      Logs BVLC Function, PDU Type, Service Choice, and Invoke ID to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Simple_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Simple_ACK_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     invoke_id       : uint8;
     service_choice  : uint8 &enforce(service_choice <= 0x1d);
 } &let {
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, service_choice, invoke_id, 0);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, service_choice, invoke_id, 0);
 };
 
 ## ----------------------------------------Complex-ACK-PDU-----------------------------------------
@@ -671,7 +672,7 @@ type Simple_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = re
 ##      Logs BVLC Function, PDU Type, Service Choice, and Invoke ID to bacnet.log
 ##      Passes Complex ACK Tags to corresponding analyzer in bacnet_analyzer.pac
 ## ------------------------------------------------------------------------------------------------
-type Complex_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8)   = record {
+type Complex_ACK_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8)   = record {
     invoke_id           : uint8;
     sequence_num        : case ((choice_tag & 0x8) >> 3) of {
         1       -> sequence_num_value:      uint8;
@@ -690,25 +691,25 @@ type Complex_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8)   =
     service_ack_tags: BACnet_Tag[] = $context.flow.process_service_tags(service_tag_buffer) &if (more_follows == 0) ;
 
     deliver: bool = case service_choice of {
-        GET_ALARM_SUMMARY               -> $context.flow.process_get_alarm_summary_ack(is_orig, invoke_id, service_ack_tags);
-        GET_ENROLLMENT_SUMMARY          -> $context.flow.process_get_enrollment_summary_ack(is_orig, invoke_id, service_ack_tags);
-        ATOMIC_READ_FILE                -> $context.flow.process_atomic_read_file_ack(is_orig, invoke_id, service_ack_tags);
-        ATOMIC_WRITE_FILE               -> $context.flow.process_atomic_write_file_ack(is_orig, invoke_id, service_ack_tags);
-        CREATE_OBJECT                   -> $context.flow.process_create_object_ack(is_orig, invoke_id, service_ack_tags);
-        READ_PROPERTY                   -> $context.flow.process_read_property_ack(is_orig, invoke_id, service_ack_tags);
+        GET_ALARM_SUMMARY               -> $context.flow.process_get_alarm_summary_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        GET_ENROLLMENT_SUMMARY          -> $context.flow.process_get_enrollment_summary_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        ATOMIC_READ_FILE                -> $context.flow.process_atomic_read_file_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        ATOMIC_WRITE_FILE               -> $context.flow.process_atomic_write_file_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        CREATE_OBJECT                   -> $context.flow.process_create_object_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        READ_PROPERTY                   -> $context.flow.process_read_property_ack(is_orig, packet_id, invoke_id, service_ack_tags);
         READ_PROPERTY_CONDITIONAL       -> false; # Removed in Version 1 Revision 12
-        READ_PROPERTY_MULTIPLE          -> $context.flow.process_read_property_multiple_ack(is_orig, invoke_id, service_ack_tags);
-        CONFIRMED_PRIVATE_TRANSFER      -> $context.flow.process_confirmed_private_transfer_ack(is_orig, invoke_id, service_ack_tags);
-        VT_OPEN                         -> $context.flow.process_vt_open_ack(is_orig, invoke_id, service_ack_tags);
-        VT_DATA                         -> $context.flow.process_vt_data_ack(is_orig, invoke_id, service_ack_tags);
+        READ_PROPERTY_MULTIPLE          -> $context.flow.process_read_property_multiple_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        CONFIRMED_PRIVATE_TRANSFER      -> $context.flow.process_confirmed_private_transfer_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        VT_OPEN                         -> $context.flow.process_vt_open_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        VT_DATA                         -> $context.flow.process_vt_data_ack(is_orig, packet_id, invoke_id, service_ack_tags);
         AUTHENTICATE                    -> false; # Removed in Version 1 Revision 11
         REQUEST_KEY                     -> false; # Removed in Version 1 Revision 11
-        READ_RANGE                      -> $context.flow.process_read_range_ack(is_orig, invoke_id, service_ack_tags);
-        GET_EVENT_INFORMATION           -> $context.flow.process_get_event_information_ack(is_orig, invoke_id, service_ack_tags);
+        READ_RANGE                      -> $context.flow.process_read_range_ack(is_orig, packet_id, invoke_id, service_ack_tags);
+        GET_EVENT_INFORMATION           -> $context.flow.process_get_event_information_ack(is_orig, packet_id, invoke_id, service_ack_tags);
         default                         -> false;
     } &if (more_follows == 0);
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, service_choice, invoke_id, 0) &if (more_follows == 0);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, service_choice, invoke_id, 0) &if (more_follows == 0);
 };
 
 ## ----------------------------------------Segment-ACK-PDU-----------------------------------------
@@ -741,7 +742,7 @@ type Segment_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = r
     actual_window_size  : uint8;
 } &let {
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, -1, invoke_id, 0);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, -1, invoke_id, 0);
 };
 
 ## -------------------------------------------Error-PDU--------------------------------------------
@@ -770,7 +771,7 @@ type Error_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record 
     error_code      : BACnet_Tag;
 } &let {
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, service_choice, invoke_id, error_code.tag_data[0]);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, service_choice, invoke_id, error_code.tag_data[0]);
 };
 
 ## -------------------------------------------Reject-PDU-------------------------------------------
@@ -794,7 +795,7 @@ type Reject_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record
     reject_reason   : uint8;
 } &let {
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, -1, invoke_id, reject_reason);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, -1, invoke_id, reject_reason);
 };
 
 ## -------------------------------------------Abort-PDU--------------------------------------------
@@ -819,7 +820,7 @@ type Abort_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record 
     abort_reason    : uint8;
 } &let {
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, -1, invoke_id, abort_reason);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, -1, invoke_id, abort_reason);
 };
 
 ###################################################################################################

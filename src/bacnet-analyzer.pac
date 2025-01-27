@@ -359,7 +359,7 @@ refine flow BACNET_Flow += {
             return const_bytestring(segmented_data_buffer.data(), segmented_data_buffer.size());
         %}
     
-    function set_packet_id():
+    function set_packet_id(): void
         %{
             if (${flowunit.packet_id} == "") {
                 ${flowunit.packet_id} = generate_random_id();

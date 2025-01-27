@@ -736,7 +736,7 @@ type Complex_ACK_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_f
 ## Protocol Parsing:
 ##      Logs BVLC Function, PDU Type, Service Choice, and Invoke ID to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Segment_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Segment_ACK_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     invoke_id           : uint8;
     sequence_num        : uint8;
     actual_window_size  : uint8;
@@ -764,7 +764,7 @@ type Segment_ACK_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = r
 ## Protocol Parsing:
 ##      Logs BVLC Function, PDU Type, Service Choice, Invoke ID, and Error Code to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Error_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Error_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     invoke_id       : uint8;
     service_choice  : uint8 &enforce(service_choice <= 0x1d);
     error_class     : BACnet_Tag;
@@ -790,7 +790,7 @@ type Error_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record 
 ## Protocol Parsing:
 ##      Logs BVLC Function, PDU Type, Invoke ID, and Reject Reason to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Reject_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Reject_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     invoke_id       : uint8;
     reject_reason   : uint8;
 } &let {
@@ -815,7 +815,7 @@ type Reject_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record
 ## Protocol Parsing:
 ##      Logs BVLC Function, PDU Type, Invoke ID, and Abort Reason to bacnet.log
 ## ------------------------------------------------------------------------------------------------
-type Abort_PDU(is_orig: bool, choice_tag: uint8, bvlc_function: uint8) = record {
+type Abort_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, bvlc_function: uint8) = record {
     invoke_id       : uint8;
     abort_reason    : uint8;
 } &let {

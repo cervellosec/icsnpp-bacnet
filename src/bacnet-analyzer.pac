@@ -428,6 +428,8 @@ refine flow BACNET_Flow += {
     ## General BACnet NPDU Message Event Generation:
     ##      - bvlc_function       -> BVLC Function
     ##          + Matches bvlc_functions in consts.zeek
+    ##      - forwarded_bacnet_ip -> Forwarded BACnet IP Address
+    ##      - forwarded_bacnet_port -> Forwarded BACnet Port
     ##      - has_npdu_message    -> If NPDU Message exists
     ##      - npdu_message_type   -> NPDU Message Type
     ##          + Matches npdu_message_types in consts.zeek
@@ -439,7 +441,7 @@ refine flow BACNET_Flow += {
     ##      - has_hop_count       -> If NPDU Hop Count exists
     ##      - hop_count           -> NPDU Hop Count
     ## ------------------------------------------------------------------------------------------------
-    function process_bacnet_npdu_header(is_orig: bool, packet_id: string, bvlc_function: uint8, npdu_message: NPDU_Message, destination: NPDU_Destination, source: NPDU_Source, has_hop_count: bool, hop_count: uint8): bool
+    function process_bacnet_npdu_header(is_orig: bool, packet_id: string, bvlc_function: uint8, forwarded_bacnet_ip: uint32, forwarded_bacnet_port: uint16, npdu_message: NPDU_Message, destination: NPDU_Destination, source: NPDU_Source, has_hop_count: bool, hop_count: uint8): bool
         %{
             if ( ::bacnet_npdu_header )
             {
@@ -465,6 +467,8 @@ refine flow BACNET_Flow += {
                                                            is_orig,
                                                            zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                            bvlc_function,
+                                                           forwarded_bacnet_ip,
+                                                           forwarded_bacnet_port,
                                                            npdu_message ? true : false,
                                                            npdu_message ? npdu_message->npdu_message_type() : 0xFF,
                                                            destination_networks,
@@ -479,30 +483,6 @@ refine flow BACNET_Flow += {
                                                            source ? zeek::make_intrusive<zeek::StringVal>(get_string2(source->SADR())) : zeek::make_intrusive<zeek::StringVal>(""),
                                                            has_hop_count,
                                                            hop_count);
-            }
-            return true;
-        %}
-
-    ## -----------------------------------process_bacnet_forwarded_npdu-----------------------------------
-    ## General BACnet Forwarded-NPDU Message Description:
-    ##      This is the default message being logged by the parser to bacnet.log for Forwarded-NPDU packets. 
-    ##      Each BACnet Forwarded-NPDU packet will create this message.
-    ## General BACnet Forwarded-NPDU Message Event Generation:
-    ##      - is_orig             -> If the message came from the originator/client or the responder/server
-    ##      - packet_id           -> Packet ID
-    ##      - bacnet_ip           -> B/IP Address of Originating Device
-    ##      - bacnet_port         -> B/IP Port of Originating Device
-    ## ------------------------------------------------------------------------------------------------
-    function process_bacnet_forwarded_npdu(is_orig: bool, packet_id: string, bacnet_ip: uint32, bacnet_port: uint16): bool
-        %{
-            if ( ::bacnet_forwarded_npdu )
-            {
-                zeek::BifEvent::enqueue_bacnet_forwarded_npdu(connection()->zeek_analyzer(),
-                                                              connection()->zeek_analyzer()->Conn(),
-                                                              is_orig,
-                                                              zeek::make_intrusive<zeek::StringVal>(packet_id),
-                                                              bacnet_ip,
-                                                              bacnet_port);
             }
             return true;
         %}

@@ -40,24 +40,26 @@ event bacnet_apdu_header%(c: connection,
 ## Event Description:
 ##      Event is generated for all BACnet NPDU packets and contains relevant BACnet header data
 ## Event Data:
-##      - c:                    connection  -> Zeek Connection Struct
-##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
-##      - packet_id:            string      -> Packet ID
-##      - bvlc_function:        count       -> BVLC Function (see bvlc_functions in consts.pac)
-##      - has_npdu_message:     bool        -> If NPDU Message exists
-##      - npdu_message_type:    count       -> NPDU Message Type (see npdu_message_types in consts.zeek)
-##      - destination_networks: index_vec   -> Vector of Destination Network Number
-##      - npdu_message_data:    string      -> NPDU Message Data
-##      - has_destination:      bool        -> If NPDU Destination exists
-##      - dnet:                 count       -> NPDU Destination Network Number
-##      - dlen:                 count       -> NPDU Destination Length
-##      - dadr:                 string      -> NPDU Destination Address
-##      - has_source:           bool        -> If NPDU Source exists
-##      - snet:                 count       -> NPDU Source Network Number
-##      - slen:                 count       -> NPDU Source Length
-##      - sadr:                 string      -> NPDU Source Address
-##      - has_hop_count:        bool        -> If NPDU Hop Count exists
-##      - hop_count:            count       -> NPDU Hop Count
+##      - c:                     connection  -> Zeek Connection Struct
+##      - is_orig:               bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:             string      -> Packet ID
+##      - bvlc_function:         count       -> BVLC Function (see bvlc_functions in consts.pac)
+##      - forwarded_bacnet_ip:   count       -> Forwarded BACnet IP Address
+##      - forwarded_bacnet_port: count       -> Forwarded BACnet Port
+##      - has_npdu_message:      bool        -> If NPDU Message exists
+##      - npdu_message_type:     count       -> NPDU Message Type (see npdu_message_types in consts.zeek)
+##      - destination_networks:  index_vec   -> Vector of Destination Network Number
+##      - npdu_message_data:     string      -> NPDU Message Data
+##      - has_destination:       bool        -> If NPDU Destination exists
+##      - dnet:                  count       -> NPDU Destination Network Number
+##      - dlen:                  count       -> NPDU Destination Length
+##      - dadr:                  string      -> NPDU Destination Address
+##      - has_source:            bool        -> If NPDU Source exists
+##      - snet:                  count       -> NPDU Source Network Number
+##      - slen:                  count       -> NPDU Source Length
+##      - sadr:                  string      -> NPDU Source Address
+##      - has_hop_count:         bool        -> If NPDU Hop Count exists
+##      - hop_count:             count       -> NPDU Hop Count
 ## Default Output:
 ##      Writes to log file bacnet.log
 ## ------------------------------------------------------------------------------------------------
@@ -65,6 +67,8 @@ event bacnet_npdu_header%(c: connection,
                           is_orig: bool,
                           packet_id: string,
                           bvlc_function: count,
+                          forwarded_bacnet_ip: count,
+                          forwarded_bacnet_port: count,
                           has_npdu_message: bool,
                           npdu_message_type: count,
                           destination_networks: index_vec,
@@ -79,24 +83,6 @@ event bacnet_npdu_header%(c: connection,
                           sadr: string,
                           has_hop_count: bool,
                           hop_count: count%);
-
-## ---------------------------------------bacnet-forwarded-npdu---------------------------------------
-## Event Description:
-##      Event is generated for all BACnet Forwarded-NPDU packets
-## Event Data:
-##      - c:                    connection  -> Zeek Connection Struct
-##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
-##      - packet_id:            string      -> Packet ID
-##      - bacnet_ip:            count       -> B/IP Address of Originating Device
-##      - bacnet_port:          count       -> B/IP Port of Originating Device
-## Default Output:
-##      No defined log in main.zeek by default
-## ------------------------------------------------------------------------------------------------
-event bacnet_forwarded_npdu%(c: connection,
-                             is_orig: bool,
-                             packet_id: string,
-                             bacnet_ip: count,
-                             bacnet_port: count%);
 
 ## ------------------------------------------bacnet-i-am-------------------------------------------
 ## Event Description:

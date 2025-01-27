@@ -242,6 +242,7 @@ event bacnet_apdu_header(c: connection,
 ###################################################################################################
 event bacnet_npdu_header(c: connection,
                          is_orig: bool,
+                         packet_id: string,
                          bvlc_function: count,
                          has_npdu_message: bool,
                          npdu_message_type: count,

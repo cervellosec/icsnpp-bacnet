@@ -22,7 +22,7 @@ export {
     type BACnet_Header: record {
         ts                      : time            &log;             # Timestamp of event
         uid                     : string          &log;             # Zeek unique ID for connection
-        packet_id              : string          &log;             # Random ID to link related logs from same packet
+        packet_id               : string          &log;             # Random ID to link related logs from same packet
         id                      : conn_id         &log;             # Zeek connection struct (addresses and ports)
         is_orig                 : bool            &log;             # the message came from the originator/client or the responder/server
         source_h                : addr            &log;             # Source IP Address
@@ -53,7 +53,7 @@ export {
     type BACnet_Discovery: record {
         ts                      : time      &log;   # Timestamp of event
         uid                     : string    &log;   # Zeek unique ID for connection
-        packet_id              : string    &log;   # Random ID to link related logs from same packet
+        packet_id               : string    &log;   # Random ID to link related logs from same packet
         id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
         source_h                : addr      &log;   # Source IP Address
@@ -77,7 +77,7 @@ export {
     type BACnet_Property: record {
         ts                      : time      &log;   # Timestamp of event
         uid                     : string    &log;   # Zeek unique ID for connection
-        packet_id              : string    &log;   # Random ID to link related logs from same packet
+        packet_id               : string    &log;   # Random ID to link related logs from same packet
         id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
         source_h                : addr      &log;   # Source IP Address
@@ -100,7 +100,7 @@ export {
     type BACnet_Device_Control: record {
         ts                      : time      &log;   # Timestamp of event
         uid                     : string    &log;   # Zeek unique ID for connection
-        packet_id              : string    &log;   # Random ID to link related logs from same packet
+        packet_id               : string    &log;   # Random ID to link related logs from same packet
         id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
         source_h                : addr      &log;   # Source IP Address

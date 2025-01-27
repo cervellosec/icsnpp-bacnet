@@ -97,28 +97,25 @@
     }BACnetTime;
 
     class RandomIdGenerator {
-        private:
-            const uint64_t nanos_;
-            const std::seed_seq seed_;
-            std::mt19937_64 gen_;
-            std::uniform_int_distribution<uint64_t> dis_;
+    private:
+        const uint64_t nanos_;
+        const std::seed_seq seed_;
+        std::mt19937_64 gen_;
+        std::uniform_int_distribution<uint64_t> dis_;
 
-        public:
-            RandomIdGenerator() :
-                nanos(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
-                seed({std::random_device()(), nanos & 0xFFFFFFFF, (nanos >> 32) & 0xFFFFFFFF}),
-                gen_(seed_),
-                dis_(0, UINT64_MAX) {}
+    public:
+        RandomIdGenerator() :
+            nanos_(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
+            seed_({std::random_device()(), nanos_ & 0xFFFFFFFF, (nanos_ >> 32) & 0xFFFFFFFF}),
+            gen_(seed_),
+            dis_(0, UINT64_MAX) {}
 
-            std::string operator()() {
-                std::stringstream ss;
-                ss << std::hex << std::setfill('0')
-                   << std::setw(16) << dis_(gen_) 
-                   << std::setw(16) << dis_(gen_);
-
-                return ss.str();
-            }
-    }
+        std::string operator()() {
+            std::stringstream ss;
+            ss << std::hex << std::setfill('0') << std::setw(16) << dis_(gen_) << std::setw(16) << dis_(gen_);
+            return ss.str();
+        }
+    };
 
     int32 get_signed(const_bytestring data);
     uint32 get_unsigned(const_bytestring data);
@@ -394,7 +391,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_apdu_header(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
-                                                           packet_id,
+                                                           zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                            bvlc_function,
                                                            pdu_type,
                                                            pdu_service,
@@ -408,7 +405,7 @@ refine flow BACNET_Flow += {
                     zeek::BifEvent::enqueue_bacnet_property_error(connection()->zeek_analyzer(),
                                                                   connection()->zeek_analyzer()->Conn(),
                                                                   is_orig,
-                                                                  packet_id,
+                                                                  zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                   invoke_id,
                                                                   pdu_type,
                                                                   pdu_service,
@@ -420,7 +417,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_device_control_response(connection()->zeek_analyzer(),
                                                                        connection()->zeek_analyzer()->Conn(),
                                                                        is_orig,
-                                                                       packet_id,
+                                                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                        invoke_id,
                                                                        pdu_service,
                                                                        pdu_type,
@@ -471,7 +468,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_npdu_header(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
-                                                           packet_id,
+                                                           zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                            bvlc_function,
                                                            npdu_message ? true : false,
                                                            npdu_message ? npdu_message->npdu_message_type() : 0xFF,
@@ -538,7 +535,7 @@ refine flow BACNET_Flow += {
                     zeek::BifEvent::enqueue_bacnet_i_am(connection()->zeek_analyzer(),
                                                         connection()->zeek_analyzer()->Conn(),
                                                         is_orig,
-                                                        packet_id,
+                                                        zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                         device_identifier.object_type,
                                                         device_identifier.instance_number,
                                                         max_apdu,
@@ -586,7 +583,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_i_have(connection()->zeek_analyzer(),
                                                       connection()->zeek_analyzer()->Conn(),
                                                       is_orig,
-                                                      packet_id,
+                                                      zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                       device_identifier.object_type,
                                                       device_identifier.instance_number,
                                                       object_identifier.object_type,
@@ -631,7 +628,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_unconfirmed_cov_notification(connection()->zeek_analyzer(),
                                                                             connection()->zeek_analyzer()->Conn(),
                                                                             is_orig,
-                                                                            packet_id,
+                                                                            zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                             subscriber_identifier,
                                                                             initiating_identifier.object_type,
                                                                             initiating_identifier.instance_number,
@@ -744,7 +741,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_unconfirmed_event_notification(connection()->zeek_analyzer(),
                                                                               connection()->zeek_analyzer()->Conn(),
                                                                               is_orig,
-                                                                              packet_id,
+                                                                              zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                               process_identifier,
                                                                               initiating_identifier.object_type,
                                                                               initiating_identifier.instance_number,
@@ -786,7 +783,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_unconfirmed_private_transfer(connection()->zeek_analyzer(),
                                                                             connection()->zeek_analyzer()->Conn(),
                                                                             is_orig,
-                                                                            packet_id,
+                                                                            zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                             vendor_id,
                                                                             service_number);
             }
@@ -828,7 +825,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_unconfirmed_text_message(connection()->zeek_analyzer(),
                                                                         connection()->zeek_analyzer()->Conn(),
                                                                         is_orig,
-                                                                        packet_id,
+                                                                        zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                         object_identifier.object_type,
                                                                         object_identifier.instance_number,
                                                                         message_priority,
@@ -864,7 +861,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_time_synchronization(connection()->zeek_analyzer(),
                                                                     connection()->zeek_analyzer()->Conn(),
                                                                     is_orig,
-                                                                    packet_id,
+                                                                    zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                     date.year,
                                                                     date.month,
                                                                     date.day,
@@ -936,7 +933,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_who_has(connection()->zeek_analyzer(),
                                                        connection()->zeek_analyzer()->Conn(),
                                                        is_orig,
-                                                       packet_id,
+                                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                        low_limit,
                                                        high_limit,
                                                        object_identifier.object_type,
@@ -981,7 +978,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_who_is(connection()->zeek_analyzer(),
                                                       connection()->zeek_analyzer()->Conn(),
                                                       is_orig,
-                                                      packet_id,
+                                                      zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                       low_limit,
                                                       high_limit);
             }
@@ -1016,7 +1013,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_utc_time_synchronization(connection()->zeek_analyzer(),
                                                                         connection()->zeek_analyzer()->Conn(),
                                                                         is_orig,
-                                                                        packet_id,
+                                                                        zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                         date.year,
                                                                         date.month,
                                                                         date.day,
@@ -1056,7 +1053,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_write_group(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
-                                                           packet_id,
+                                                           zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                            group_number,
                                                            write_priority);
             }
@@ -1095,7 +1092,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_unconfirmed_cov_notification_multiple(connection()->zeek_analyzer(),
                                                                                      connection()->zeek_analyzer()->Conn(),
                                                                                      is_orig,
-                                                                                     packet_id,
+                                                                                     zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                                      subscriber_identifier,
                                                                                      initiating_identifier.object_type,
                                                                                      initiating_identifier.instance_number,
@@ -1148,7 +1145,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_acknowledge_alarm(connection()->zeek_analyzer(),
                                                                  connection()->zeek_analyzer()->Conn(),
                                                                  is_orig,
-                                                                 packet_id,
+                                                                 zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                  invoke_id,
                                                                  acknowledge_process_id,
                                                                  event_identifier.object_type,
@@ -1193,7 +1190,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_confirmed_cov_notification(connection()->zeek_analyzer(),
                                                                           connection()->zeek_analyzer()->Conn(),
                                                                           is_orig,
-                                                                          packet_id,
+                                                                          zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                           invoke_id,
                                                                           subscriber_identifier,
                                                                           initiating_identifier.object_type,
@@ -1307,7 +1304,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_confirmed_event_notification(connection()->zeek_analyzer(),
                                                                             connection()->zeek_analyzer()->Conn(),
                                                                             is_orig,
-                                                                            packet_id,
+                                                                            zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                             invoke_id,
                                                                             process_identifier,
                                                                             initiating_identifier.object_type,
@@ -1342,7 +1339,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_get_alarm_summary(connection()->zeek_analyzer(),
                                                                  connection()->zeek_analyzer()->Conn(),
                                                                  is_orig,
-                                                                 packet_id,
+                                                                 zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                  invoke_id);
             }
             return true;
@@ -1365,7 +1362,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_get_enrollment_summary(connection()->zeek_analyzer(),
                                                                       connection()->zeek_analyzer()->Conn(),
                                                                       is_orig,
-                                                                      packet_id,
+                                                                      zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                       invoke_id);
             }
             return true;
@@ -1417,7 +1414,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_subscribe_cov(connection()->zeek_analyzer(),
                                                              connection()->zeek_analyzer()->Conn(),
                                                              is_orig,
-                                                             packet_id,
+                                                             zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                              invoke_id,
                                                              subscriber_process_identifier,
                                                              monitored_identifier.object_type,
@@ -1468,7 +1465,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_atomic_read_file(connection()->zeek_analyzer(),
                                                                 connection()->zeek_analyzer()->Conn(),
                                                                 is_orig,
-                                                                packet_id,
+                                                                zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                 invoke_id,
                                                                 file_identifier.object_type,
                                                                 file_identifier.instance_number,
@@ -1522,7 +1519,7 @@ refine flow BACNET_Flow += {
                                        file_start,
                                        connection()->zeek_analyzer()->GetAnalyzerTag(),
                                        connection()->zeek_analyzer()->Conn(),
-                                       packet_id,
+                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                        is_orig);
             }
             else{
@@ -1536,7 +1533,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_atomic_write_file(connection()->zeek_analyzer(),
                                                                  connection()->zeek_analyzer()->Conn(),
                                                                  is_orig,
-                                                                 packet_id,
+                                                                 zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                  invoke_id,
                                                                  file_identifier.object_type,
                                                                  file_identifier.instance_number,
@@ -1582,7 +1579,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_add_list_element(connection()->zeek_analyzer(),
                                                                 connection()->zeek_analyzer()->Conn(),
                                                                 is_orig,
-                                                                packet_id,
+                                                                zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                 invoke_id,
                                                                 object_identifier.object_type,
                                                                 object_identifier.instance_number,
@@ -1628,7 +1625,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_remove_list_element(connection()->zeek_analyzer(),
                                                                    connection()->zeek_analyzer()->Conn(),
                                                                    is_orig,
-                                                                   packet_id,
+                                                                   zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                    invoke_id,
                                                                    object_identifier.object_type,
                                                                    object_identifier.instance_number,
@@ -1656,7 +1653,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_create_object(connection()->zeek_analyzer(),
                                                              connection()->zeek_analyzer()->Conn(),
                                                              is_orig,
-                                                             packet_id,
+                                                             zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                              invoke_id);
             }
             return true;
@@ -1680,7 +1677,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_delete_object(connection()->zeek_analyzer(),
                                                              connection()->zeek_analyzer()->Conn(),
                                                              is_orig,
-                                                             packet_id,
+                                                             zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                              invoke_id,
                                                              object_identifier.object_type,
                                                              object_identifier.instance_number);
@@ -1721,7 +1718,7 @@ refine flow BACNET_Flow += {
                     zeek::BifEvent::enqueue_bacnet_read_property(connection()->zeek_analyzer(),
                                                                  connection()->zeek_analyzer()->Conn(),
                                                                  is_orig,
-                                                                 packet_id,
+                                                                 zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                  invoke_id,
                                                                  zeek::make_intrusive<zeek::StringVal>("read-property-request"),
                                                                  object_identifier.object_type,
@@ -1767,7 +1764,7 @@ refine flow BACNET_Flow += {
                             zeek::BifEvent::enqueue_bacnet_read_property(connection()->zeek_analyzer(),
                                                                          connection()->zeek_analyzer()->Conn(),
                                                                          is_orig,
-                                                                         packet_id,
+                                                                         zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                          invoke_id,
                                                                          zeek::make_intrusive<zeek::StringVal>("read-property-multiple-request"),
                                                                          object_identifier.object_type,
@@ -1844,7 +1841,7 @@ refine flow BACNET_Flow += {
                     zeek::BifEvent::enqueue_bacnet_write_property(connection()->zeek_analyzer(),
                                                                   connection()->zeek_analyzer()->Conn(),
                                                                   is_orig,
-                                                                  packet_id,
+                                                                  zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                   invoke_id,
                                                                   object_identifier.object_type,
                                                                   object_identifier.instance_number,
@@ -1879,7 +1876,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_write_property_multiple(connection()->zeek_analyzer(),
                                                                        connection()->zeek_analyzer()->Conn(),
                                                                        is_orig,
-                                                                       packet_id,
+                                                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                        invoke_id);
             }
             return true;
@@ -1932,7 +1929,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_device_communication_control(connection()->zeek_analyzer(),
                                                                             connection()->zeek_analyzer()->Conn(),
                                                                             is_orig,
-                                                                            packet_id,
+                                                                            zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                             invoke_id,
                                                                             time_duration,
                                                                             enable_disable,
@@ -1964,7 +1961,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_confirmed_private_transfer(connection()->zeek_analyzer(),
                                                                           connection()->zeek_analyzer()->Conn(),
                                                                           is_orig,
-                                                                          packet_id,
+                                                                          zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                           invoke_id,
                                                                           vendor_id,
                                                                           service_number);
@@ -2007,7 +2004,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_confirmed_text_message(connection()->zeek_analyzer(),
                                                                       connection()->zeek_analyzer()->Conn(),
                                                                       is_orig,
-                                                                      packet_id,
+                                                                      zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                       invoke_id,
                                                                       object_identifier.object_type,
                                                                       object_identifier.instance_number,
@@ -2043,7 +2040,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_reinitialize_device(connection()->zeek_analyzer(),
                                                                    connection()->zeek_analyzer()->Conn(),
                                                                    is_orig,
-                                                                   packet_id,
+                                                                   zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                    invoke_id,
                                                                    reinitialized_state,
                                                                    zeek::make_intrusive<zeek::StringVal>(password));
@@ -2073,7 +2070,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_vt_open(connection()->zeek_analyzer(),
                                                        connection()->zeek_analyzer()->Conn(),
                                                        is_orig,
-                                                       packet_id,
+                                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                        invoke_id,
                                                        vt_class,
                                                        local_vt_id);
@@ -2098,7 +2095,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_vt_close(connection()->zeek_analyzer(),
                                                         connection()->zeek_analyzer()->Conn(),
                                                         is_orig,
-                                                        packet_id,
+                                                        zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                         invoke_id,
                                                         remote_vt_id);
             }
@@ -2131,7 +2128,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_vt_data(connection()->zeek_analyzer(),
                                                        connection()->zeek_analyzer()->Conn(),
                                                        is_orig,
-                                                       packet_id,
+                                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                        invoke_id,
                                                        vt_session_id,
                                                        zeek::make_intrusive<zeek::StringVal>(vt_data),
@@ -2173,7 +2170,7 @@ refine flow BACNET_Flow += {
                     zeek::BifEvent::enqueue_bacnet_read_range(connection()->zeek_analyzer(),
                                                               connection()->zeek_analyzer()->Conn(),
                                                               is_orig,
-                                                              packet_id,
+                                                              zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                               invoke_id,
                                                               object_identifier.object_type,
                                                               object_identifier.instance_number,
@@ -2220,7 +2217,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_life_safety_operation(connection()->zeek_analyzer(),
                                                                      connection()->zeek_analyzer()->Conn(),
                                                                      is_orig,
-                                                                     packet_id,
+                                                                     zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                      invoke_id,
                                                                      requesting_id,
                                                                      zeek::make_intrusive<zeek::StringVal>(requesting_source),
@@ -2288,7 +2285,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_subscribe_cov_property(connection()->zeek_analyzer(),
                                                                       connection()->zeek_analyzer()->Conn(),
                                                                       is_orig,
-                                                                      packet_id,
+                                                                      zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                       invoke_id,
                                                                       subscriber_process_id,
                                                                       monitored_object_identifer.object_type,
@@ -2322,7 +2319,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_get_event_information(connection()->zeek_analyzer(),
                                                                      connection()->zeek_analyzer()->Conn(),
                                                                      is_orig,
-                                                                     packet_id,
+                                                                     zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                      invoke_id,
                                                                      last_received.object_type,
                                                                      last_received.instance_number);
@@ -2356,7 +2353,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_get_alarm_summary_ack(connection()->zeek_analyzer(),
                                                                      connection()->zeek_analyzer()->Conn(),
                                                                      is_orig,
-                                                                     packet_id,
+                                                                     zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                      invoke_id);
             }
             return true;
@@ -2379,7 +2376,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_get_enrollment_summary_ack(connection()->zeek_analyzer(),
                                                                           connection()->zeek_analyzer()->Conn(),
                                                                           is_orig,
-                                                                          packet_id,
+                                                                          zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                           invoke_id);
             }
             return true;
@@ -2448,7 +2445,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_atomic_read_file_ack(connection()->zeek_analyzer(),
                                                                     connection()->zeek_analyzer()->Conn(),
                                                                     is_orig,
-                                                                    packet_id,
+                                                                    zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                     invoke_id,
                                                                     end_of_file,
                                                                     zeek::make_intrusive<zeek::StringVal>(access_type),
@@ -2486,7 +2483,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_atomic_write_file_ack(connection()->zeek_analyzer(),
                                                                      connection()->zeek_analyzer()->Conn(),
                                                                      is_orig,
-                                                                     packet_id,
+                                                                     zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                      invoke_id,
                                                                      zeek::make_intrusive<zeek::StringVal>(access_type),
                                                                      file_start);
@@ -2513,7 +2510,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_create_object_ack(connection()->zeek_analyzer(),
                                                                  connection()->zeek_analyzer()->Conn(),
                                                                  is_orig,
-                                                                 packet_id,
+                                                                 zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                  invoke_id,
                                                                  result_object_identifier.object_type,
                                                                  result_object_identifier.instance_number);
@@ -2567,7 +2564,7 @@ refine flow BACNET_Flow += {
                             zeek::BifEvent::enqueue_bacnet_read_property_ack(connection()->zeek_analyzer(),
                                                                             connection()->zeek_analyzer()->Conn(),
                                                                             is_orig,
-                                                                            packet_id,
+                                                                            zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                             invoke_id,
                                                                             zeek::make_intrusive<zeek::StringVal>("read-property-ack"),
                                                                             object_identifier.object_type,
@@ -2621,7 +2618,7 @@ refine flow BACNET_Flow += {
                                 zeek::BifEvent::enqueue_bacnet_read_property_ack(connection()->zeek_analyzer(),
                                                                                  connection()->zeek_analyzer()->Conn(),
                                                                                  is_orig,
-                                                                                 packet_id,
+                                                                                 zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                                  invoke_id,
                                                                                  zeek::make_intrusive<zeek::StringVal>("read-property-multiple-ack"),
                                                                                  object_identifier.object_type,
@@ -2642,7 +2639,7 @@ refine flow BACNET_Flow += {
                             zeek::BifEvent::enqueue_bacnet_read_property_ack(connection()->zeek_analyzer(),
                                                                              connection()->zeek_analyzer()->Conn(),
                                                                              is_orig,
-                                                                             packet_id,
+                                                                             zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                              invoke_id,
                                                                              zeek::make_intrusive<zeek::StringVal>("read-property-multiple-ack"),
                                                                              object_identifier.object_type,
@@ -2656,7 +2653,7 @@ refine flow BACNET_Flow += {
                             zeek::BifEvent::enqueue_bacnet_read_property_ack(connection()->zeek_analyzer(),
                                                                              connection()->zeek_analyzer()->Conn(),
                                                                              is_orig,
-                                                                             packet_id,
+                                                                             zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                              invoke_id,
                                                                              zeek::make_intrusive<zeek::StringVal>("read-property-multiple-ack"),
                                                                              object_identifier.object_type,
@@ -2696,7 +2693,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_confirmed_private_transfer_ack(connection()->zeek_analyzer(),
                                                                               connection()->zeek_analyzer()->Conn(),
                                                                               is_orig,
-                                                                              packet_id,
+                                                                              zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                               invoke_id,
                                                                               vendor_id,
                                                                               service_number);
@@ -2722,7 +2719,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_vt_open_ack(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
-                                                           packet_id,
+                                                           zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                            invoke_id,
                                                            remote_session_identifier);
             }
@@ -2754,7 +2751,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_vt_data_ack(connection()->zeek_analyzer(),
                                                            connection()->zeek_analyzer()->Conn(),
                                                            is_orig,
-                                                           packet_id,
+                                                           zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                            invoke_id,
                                                            data_accepted,
                                                            accepted_count);
@@ -2818,7 +2815,7 @@ refine flow BACNET_Flow += {
                     zeek::BifEvent::enqueue_bacnet_read_range_ack(connection()->zeek_analyzer(),
                                                                   connection()->zeek_analyzer()->Conn(),
                                                                   is_orig,
-                                                                  packet_id,
+                                                                  zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                   invoke_id,
                                                                   object_identifier.object_type,
                                                                   object_identifier.instance_number,
@@ -2843,7 +2840,7 @@ refine flow BACNET_Flow += {
                 zeek::BifEvent::enqueue_bacnet_get_event_information_ack(connection()->zeek_analyzer(),
                                                                          connection()->zeek_analyzer()->Conn(),
                                                                          is_orig,
-                                                                         packet_id,
+                                                                         zeek::make_intrusive<zeek::StringVal>(packet_id),
                                                                          invoke_id);
             }
             return true;

@@ -572,7 +572,7 @@ type Confirmed_Request_PDU(is_orig: bool, packet_id: string, choice_tag: uint8, 
         default                         -> false;
     } &if (more_follows == 0);
     pdu_type: uint8 = choice_tag >> 4;
-    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, bvlc_function, pdu_type, service_choice, invoke_id, 0) &if (more_follows == 0);
+    overview: bool = $context.flow.process_bacnet_apdu_header(is_orig, packet_id, bvlc_function, pdu_type, service_choice, invoke_id, 0) &if (more_follows == 0);
 };
 
 ## ------------------------------------Unconfirmed-Request-PDU-------------------------------------

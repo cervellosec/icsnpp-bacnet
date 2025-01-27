@@ -16,7 +16,7 @@
 type BACNET_PDU(is_orig: bool) = record {
     bacnet : BVLC_Header(is_orig, packet_id);
 } &byteorder=bigendian &let {
-    packet_id: string = $context.flow.generate_random_id();
+    packet_id: string = $context.flow.get_packet_id();
 }
 
 ###################################################################################################

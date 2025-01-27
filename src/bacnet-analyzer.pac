@@ -359,6 +359,11 @@ refine flow BACNET_Flow += {
             return const_bytestring(segmented_data_buffer.data(), segmented_data_buffer.size());
         %}
 
+    function get_packet_id(): string
+        %{
+            return generate_random_id();
+        %}
+
     ###################################################################################################
     ##################################### GENERAL BACNET MESSAGE ######################################
     ###################################################################################################

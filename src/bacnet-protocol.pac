@@ -142,7 +142,9 @@ type Forwarded_NPDU(is_orig: bool, packet_id: string) = record {
     bacnet_ip       : uint32;
     bacnet_port     : uint16;
     npdu            : NPDU_Header(is_orig, packet_id, 0x04);
-}
+} &let {
+    deliver: bool = $context.flow.process_bacnet_forwarded_npdu(is_orig, packet_id, bacnet_ip, bacnet_port);
+};
 
 ## ------------------------------------Register-Foreign-Device-------------------------------------
 ## Message Description:

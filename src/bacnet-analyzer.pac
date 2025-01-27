@@ -482,6 +482,30 @@ refine flow BACNET_Flow += {
             return true;
         %}
 
+    ## -----------------------------------process_bacnet_forwarded_npdu-----------------------------------
+    ## General BACnet Forwarded-NPDU Message Description:
+    ##      This is the default message being logged by the parser to bacnet.log for Forwarded-NPDU packets. 
+    ##      Each BACnet Forwarded-NPDU packet will create this message.
+    ## General BACnet Forwarded-NPDU Message Event Generation:
+    ##      - is_orig             -> If the message came from the originator/client or the responder/server
+    ##      - packet_id           -> Packet ID
+    ##      - bacnet_ip           -> B/IP Address of Originating Device
+    ##      - bacnet_port         -> B/IP Port of Originating Device
+    ## ------------------------------------------------------------------------------------------------
+    function process_bacnet_forwarded_npdu(is_orig: bool, packet_id: string, bacnet_ip: uint32, bacnet_port: uint16): bool
+        %{
+            if ( ::bacnet_forwarded_npdu )
+            {
+                zeek::BifEvent::enqueue_bacnet_forwarded_npdu(connection()->zeek_analyzer(),
+                                                              connection()->zeek_analyzer()->Conn(),
+                                                              is_orig,
+                                                              zeek::make_intrusive<zeek::StringVal>(packet_id),
+                                                              bacnet_ip,
+                                                              bacnet_port);
+            }
+            return true;
+        %}
+
     ###################################################################################################
     ################################## END OF GENERAL BACNET MESSAGE ##################################
     ###################################################################################################

@@ -80,6 +80,24 @@ event bacnet_npdu_header%(c: connection,
                           has_hop_count: bool,
                           hop_count: count%);
 
+## ---------------------------------------bacnet-forwarded-npdu---------------------------------------
+## Event Description:
+##      Event is generated for all BACnet Forwarded-NPDU packets
+## Event Data:
+##      - c:                    connection  -> Zeek Connection Struct
+##      - is_orig:              bool        -> the message came from the originator/client or the responder/server
+##      - packet_id:            string      -> Packet ID
+##      - bacnet_ip:            count       -> B/IP Address of Originating Device
+##      - bacnet_port:          count       -> B/IP Port of Originating Device
+## Default Output:
+##      No defined log in main.zeek by default
+## ------------------------------------------------------------------------------------------------
+event bacnet_forwarded_npdu%(c: connection,
+                             is_orig: bool,
+                             packet_id: string,
+                             bacnet_ip: count,
+                             bacnet_port: count%);
+
 ## ------------------------------------------bacnet-i-am-------------------------------------------
 ## Event Description:
 ##      Event is generated for all BACnet I-Am packets

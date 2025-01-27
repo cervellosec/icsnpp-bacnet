@@ -98,16 +98,12 @@
 
     class RandomIdGenerator {
     private:
-        const uint64_t nanos_;
-        const std::seed_seq seed_;
         std::mt19937_64 gen_;
         std::uniform_int_distribution<uint64_t> dis_;
 
     public:
         RandomIdGenerator() :
-            nanos_(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
-            seed_({std::random_device()(), nanos_ & 0xFFFFFFFF, (nanos_ >> 32) & 0xFFFFFFFF}),
-            gen_(seed_),
+            gen_(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
             dis_(0, UINT64_MAX) {}
 
         std::string operator()() {
@@ -384,8 +380,6 @@ refine flow BACNET_Flow += {
     ## ------------------------------------------------------------------------------------------------
     function process_bacnet_apdu_header(is_orig: bool, packet_id: string, bvlc_function: uint8, pdu_type: int8, pdu_service: int8, invoke_id: uint8, result_code: int8): bool
         %{
-            set_packet_id();
-
             if ( ::bacnet_apdu_header )
             {
                 zeek::BifEvent::enqueue_bacnet_apdu_header(connection()->zeek_analyzer(),
@@ -1519,7 +1513,6 @@ refine flow BACNET_Flow += {
                                        file_start,
                                        connection()->zeek_analyzer()->GetAnalyzerTag(),
                                        connection()->zeek_analyzer()->Conn(),
-                                       zeek::make_intrusive<zeek::StringVal>(packet_id),
                                        is_orig);
             }
             else{

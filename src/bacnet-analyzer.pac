@@ -98,12 +98,13 @@
 
     class RandomIdGenerator {
     private:
+        std::random_device rd_;
         std::mt19937_64 gen_;
         std::uniform_int_distribution<uint64_t> dis_;
 
     public:
         RandomIdGenerator() :
-            gen_(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()),
+            gen_(static_cast<uint64_t>(rd_()) | static_cast<uint64_t>(rd_()) << 32),
             dis_(0, UINT64_MAX) {}
 
         std::string operator()() {

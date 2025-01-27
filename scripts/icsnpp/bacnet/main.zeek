@@ -265,6 +265,7 @@ event bacnet_npdu_header(c: connection,
     bacnet_log$ts  = network_time();
     bacnet_log$uid = c$uid;
     bacnet_log$id  = c$id;
+    bacnet_log$packet_id = packet_id;
 
     if(is_orig)
     {

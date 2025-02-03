@@ -34,6 +34,8 @@ export {
         pdu_service             : string          &log;             # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
         invoke_id               : count           &log;             # Invoke ID
         result_code             : string          &log;             # See (abort_reasons, reject_reasons, and error_codes)
+        forwarded_bacnet_ip     : addr            &log &optional;   # Forwarded BACnet IP Address
+        forwarded_bacnet_port   : port            &log &optional;   # Forwarded BACnet Port
         destination_networks    : vector of count &log &optional;   # Vector of Destination Network Number
         npdu_message_data       : string          &log &optional;   # NPDU Message Data
         npdu_dnet               : count           &log &optional;   # NPDU Destination Network Number
@@ -244,6 +246,8 @@ event bacnet_npdu_header(c: connection,
                          is_orig: bool,
                          packet_id: string,
                          bvlc_function: count,
+                         forwarded_bacnet_ip: count,
+                         forwarded_bacnet_port: count,
                          has_npdu_message: bool,
                          npdu_message_type: count,
                          destination_networks: index_vec,
@@ -281,9 +285,14 @@ event bacnet_npdu_header(c: connection,
         bacnet_log$destination_p    = c$id$orig_p;
     }
 
+    bacnet_log$pdu_type = "NPDU";
     bacnet_log$bvlc_function = bvlc_functions[bvlc_function];
 
-    bacnet_log$pdu_type = "NPDU";
+    # If the BVLC function is 0x04, then the NPDU is a forwarded NPDU
+    if (bvlc_function == 0x04) {
+        bacnet_log$forwarded_bacnet_ip = count_to_v4_addr(forwarded_bacnet_ip);
+        bacnet_log$forwarded_bacnet_port = count_to_port(forwarded_bacnet_port, udp);
+    }
 
     if (has_npdu_message) {
         bacnet_log$pdu_service = npdu_message_types[npdu_message_type];

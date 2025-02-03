@@ -141,9 +141,7 @@ type Read_Broadcast_Distribution_Table_ACK(is_orig: bool, packet_id: string) = r
 type Forwarded_NPDU(is_orig: bool, packet_id: string) = record {
     bacnet_ip       : uint32;
     bacnet_port     : uint16;
-    npdu            : NPDU_Header(is_orig, packet_id, 0x04);
-} &let {
-    deliver: bool = $context.flow.process_bacnet_forwarded_npdu(is_orig, packet_id, bacnet_ip, bacnet_port);
+    npdu            : NPDU_Header(is_orig, packet_id, 0x04, bacnet_ip, bacnet_port);
 };
 
 ## ------------------------------------Register-Foreign-Device-------------------------------------
@@ -220,7 +218,7 @@ type Delete_Foreign_Device_Table_Entry(is_orig: bool, packet_id: string) = recor
 ##      processing
 ## ------------------------------------------------------------------------------------------------
 type Distribute_Broadcast_to_Network(is_orig: bool, packet_id: string) = record {
-    npdu             : NPDU_Header(is_orig, packet_id, 0x09);
+    npdu             : NPDU_Header(is_orig, packet_id, 0x09, 0, 0);
 }
 
 ## -------------------------------------Original-Unicast-NPDU--------------------------------------
@@ -233,7 +231,7 @@ type Distribute_Broadcast_to_Network(is_orig: bool, packet_id: string) = record 
 ##      Passes BVLC Function (0x0A for Original-Unicast-NPDU) to NPDU layer for further processing
 ## ------------------------------------------------------------------------------------------------
 type Original_Unicast_NPDU(is_orig: bool, packet_id: string) = record {
-    npdu             : NPDU_Header(is_orig, packet_id, 0x0A);
+    npdu             : NPDU_Header(is_orig, packet_id, 0x0A, 0, 0);
 }
 
 ## ------------------------------------Original-Broadcast-NPDU-------------------------------------
@@ -246,7 +244,7 @@ type Original_Unicast_NPDU(is_orig: bool, packet_id: string) = record {
 ##      Passes BVLC Function (0x0B for Original-Broadcast-NPDU) to NPDU layer for further processing
 ## ------------------------------------------------------------------------------------------------
 type Original_Broadcast_NPDU(is_orig: bool, packet_id: string) = record {
-    npdu             : NPDU_Header(is_orig, packet_id, 0x0B);
+    npdu             : NPDU_Header(is_orig, packet_id, 0x0B, 0, 0);
 }
 
 ## ------------------------------------------Secure-BVLL-------------------------------------------
@@ -340,7 +338,7 @@ type FDT_Entry = record {
 ## Protocol Parsing:
 ##      Passes BVLC Function to APDU for further processing
 ## ------------------------------------------------------------------------------------------------
-type NPDU_Header(is_orig: bool, packet_id: string, bvlc_function: uint8) = record {
+type NPDU_Header(is_orig: bool, packet_id: string, bvlc_function: uint8, forwarded_bacnet_ip: uint32, forwarded_bacnet_port: uint16) = record {
     protocol_version    : uint8 &enforce(protocol_version == 0x01);
     npdu_control        : uint8;
     npdu_message        : case ((npdu_control & 0x80) >> 7) of {
@@ -369,7 +367,7 @@ type NPDU_Header(is_orig: bool, packet_id: string, bvlc_function: uint8) = recor
     has_source: bool = ((npdu_control & 0x08) >> 3) == 1;
     has_hop_count: bool = ((npdu_control & 0x20) >> 5) == 1;
 
-    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, packet_id, bvlc_function, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
+    overview: bool = $context.flow.process_bacnet_npdu_header(is_orig, packet_id, bvlc_function, forwarded_bacnet_ip, forwarded_bacnet_port, has_npdu_message ? npdu_message_exists : 0, has_destination ? destination_exists : 0, has_source ? source_exists : 0, has_hop_count, has_hop_count ? hop_count_value : 0xFF);
 };
 
 ## ------------------------------------------NPDU-Message------------------------------------------

@@ -427,6 +427,11 @@ type NPDU_Source = record {
     SNET        : uint16;
     SLEN        : uint8;
     SADR        : bytestring &length = SLEN;
+} &let {
+    # Capture the source into the flow so an I-Am inside this same packet can log
+    # the (network, MAC) address the announcing device sits at. NPDU_Source is
+    # parsed before the APDU, so this runs before process_i_am.
+    capture: bool = $context.flow.set_current_npdu_source(SNET, SLEN, SADR);
 }
 
 

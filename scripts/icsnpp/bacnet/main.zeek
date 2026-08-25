@@ -70,6 +70,9 @@ export {
         vendor                  : string    &log;   ##< Vendor Name (i-am and i-have requests)
         range                   : string    &log;   ##< Specify range of devices to return (in who-is and who-has requests)
         object_name             : string    &log;   ##< Object name searching for (who-has) or responding with (i-have)
+        npdu_snet               : count     &log &optional;   ##< NPDU Source Network Number of the announcing device (i-am)
+        npdu_slen               : count     &log &optional;   ##< NPDU Source Length
+        npdu_sadr               : string    &log &optional;   ##< NPDU Source Address (MS/TP MAC of the announcing device)
     };
     global log_bacnet_discovery: event(rec: BACnet_Discovery);
 
@@ -380,7 +383,10 @@ event bacnet_i_am(c: connection,
                   instance_number: count,
                   max_apdu: count,
                   segmentation: count,
-                  vendor_id: count){
+                  vendor_id: count,
+                  npdu_snet: count,
+                  npdu_slen: count,
+                  npdu_sadr: string){
 
     set_service(c);
     local bacnet_discovery: BACnet_Discovery;
@@ -410,6 +416,15 @@ event bacnet_i_am(c: connection,
     if(instance_number != UINT32_MAX)
         bacnet_discovery$instance_number = instance_number;
     bacnet_discovery$vendor = vendors[vendor_id];
+
+    # NPDU source of the announcing device: 0xFFFF snet means the I-Am was not
+    # routed (the device is local, addressed by its IP), so leave it unset.
+    if(npdu_snet != 0xFFFF)
+    {
+        bacnet_discovery$npdu_snet = npdu_snet;
+        bacnet_discovery$npdu_slen = npdu_slen;
+        bacnet_discovery$npdu_sadr = npdu_sadr;
+    }
 
     Log::write(LOG_BACNET_DISCOVERY, bacnet_discovery);
 }

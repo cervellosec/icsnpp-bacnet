@@ -334,9 +334,32 @@ refine flow BACNET_Flow += {
         // Vector of uint8 that holds segmented data.  This is the underlying/backing structure
         // for the const_bytestring that gets passed between the buffer_service_tags function
         // and the process_service_tags function via the Binpac $context.flow.
-        // 
+        //
         vector<binpac::uint8> segmented_data_buffer;
+
+        //
+        // NPDU source (SNET/SLEN/SADR) of the packet currently being parsed. The
+        // NPDU is parsed before the APDU, so this is populated (by NPDU_Source's
+        // &let) before an I-Am inside the same packet is processed. It lets the
+        // discovery log record the (network, MAC) address the announcing device
+        // sits at -- the field that links an I-Am's device identity to its
+        // BACNET_NPDU_<snet>_<sadr> asset when the device is behind a router.
+        // Cleared per-packet in process_bacnet_npdu_header.
+        //
+        bool bacnet_src_present = false;
+        binpac::uint16 bacnet_src_snet = 0;
+        binpac::uint8 bacnet_src_slen = 0;
+        std::string bacnet_src_sadr;
     %}
+
+    function set_current_npdu_source(snet: uint16, slen: uint8, sadr: const_bytestring): bool
+        %{
+            bacnet_src_present = true;
+            bacnet_src_snet = snet;
+            bacnet_src_slen = slen;
+            bacnet_src_sadr = get_string2(sadr);
+            return true;
+        %}
 
     function process_service_tags(data: const_bytestring): BACnet_Tag[]
         %{
@@ -489,6 +512,11 @@ refine flow BACNET_Flow += {
     ## ------------------------------------------------------------------------------------------------
     function process_bacnet_npdu_header(is_orig: bool, packet_id: string, bvlc_function: uint8, forwarded_bacnet_ip: uint32, forwarded_bacnet_port: uint16, npdu_message: NPDU_Message, destination: NPDU_Destination, source: NPDU_Source, has_hop_count: bool, hop_count: uint8): bool
         %{
+            // Runs after this packet's APDU (and any I-Am) has read the captured
+            // source, so clear it here for the next packet -- a packet with no
+            // NPDU source must not inherit the previous packet's address.
+            bacnet_src_present = false;
+
             if ( ::bacnet_npdu_header )
             {
                 auto destination_networks = zeek::make_intrusive<zeek::VectorVal>(zeek::id::index_vec);
@@ -585,7 +613,10 @@ refine flow BACNET_Flow += {
                                                         device_identifier.instance_number,
                                                         max_apdu,
                                                         segmentation_supported,
-                                                        vendor_id);
+                                                        vendor_id,
+                                                        bacnet_src_present ? bacnet_src_snet : 0xFFFF,
+                                                        bacnet_src_present ? bacnet_src_slen : 0,
+                                                        bacnet_src_present ? zeek::make_intrusive<zeek::StringVal>(bacnet_src_sadr) : zeek::make_intrusive<zeek::StringVal>(""));
                 }
             }
             return true;

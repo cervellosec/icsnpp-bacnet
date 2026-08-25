@@ -106,7 +106,10 @@ event bacnet_i_am%(c: connection,
                    instance_number: count,
                    max_apdu: count,
                    segmentation: count,
-                   vendor_id: count%);
+                   vendor_id: count,
+                   npdu_snet: count,
+                   npdu_slen: count,
+                   npdu_sadr: string%);
 
 ## -----------------------------------------bacnet-who-is------------------------------------------
 ## Event Description:

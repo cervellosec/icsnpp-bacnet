@@ -73,6 +73,8 @@ export {
         npdu_snet               : count     &log &optional;   ##< NPDU Source Network Number of the announcing device (i-am)
         npdu_slen               : count     &log &optional;   ##< NPDU Source Length
         npdu_sadr               : string    &log &optional;   ##< NPDU Source Address (MS/TP MAC of the announcing device)
+        max_apdu                : count     &log &optional;   ##< Max APDU length accepted (i-am)
+        segmentation            : string    &log &optional;   ##< Segmentation support (i-am; see segmentation_supported_status)
     };
     global log_bacnet_discovery: event(rec: BACnet_Discovery);
 
@@ -416,6 +418,12 @@ event bacnet_i_am(c: connection,
     if(instance_number != UINT32_MAX)
         bacnet_discovery$instance_number = instance_number;
     bacnet_discovery$vendor = vendors[vendor_id];
+
+    # Device capability fingerprint carried by every I-Am.
+    if(max_apdu != UINT32_MAX)
+        bacnet_discovery$max_apdu = max_apdu;
+    if(segmentation != UINT32_MAX)
+        bacnet_discovery$segmentation = segmentation_supported_status[segmentation];
 
     # NPDU source of the announcing device: 0xFFFF snet means the I-Am was not
     # routed (the device is local, addressed by its IP), so leave it unset.

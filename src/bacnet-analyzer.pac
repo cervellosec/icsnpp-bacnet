@@ -17,7 +17,11 @@
 
 %header{
 
-    static string object_types[] = {"analog-input","analog-output","analog-value","binary-input","binary-output","binary-value","calendar","command","device","event-enrollment","file","group","loop","multi-state-input","multi-state-output","notification-class","program","schedule","averaging","multi-state-value","trend-log","life-safety-point","life-safety-zone","accumulator","pulse-converter","event-log","global-group","trend-log-multiple","load-control","structured-view","access-door","access-credential","access-point","access-rights","access-user","access-zone","credential-data-input","network-security","bitstring-value","characterstring-value","date-pattern-value","date-value","datetime-pattern-value","datetime-value","integer-value","large-analog-value","octetstring-value","positive-integer-value","time-pattern-value","time-value"};
+    // Indexed by BACnetObjectType enum value (ASHRAE 135 Clause 21). "timer" (31)
+    // must stay in place: it realigns everything above it — without it the array
+    // was off by one from index 31 up (access-credential rendered as access-point,
+    // etc.), corrupting the object-identifier value strings.
+    static string object_types[] = {"analog-input","analog-output","analog-value","binary-input","binary-output","binary-value","calendar","command","device","event-enrollment","file","group","loop","multi-state-input","multi-state-output","notification-class","program","schedule","averaging","multi-state-value","trend-log","life-safety-point","life-safety-zone","accumulator","pulse-converter","event-log","global-group","trend-log-multiple","load-control","structured-view","access-door","timer","access-credential","access-point","access-rights","access-user","access-zone","credential-data-input","network-security","bitstring-value","characterstring-value","date-pattern-value","date-value","datetime-pattern-value","datetime-value","integer-value","large-analog-value","octetstring-value","positive-integer-value","time-pattern-value","time-value","notification-forwarder","alert-enrollment","channel","lighting-output","binary-lighting-output","network-port","elevator-group","escalator","lift","staging","audit-log","audit-reporter","color","color-temperature"};
 
     // BACnetObjectIdentifier Object
     typedef struct BACnetObjectIdentifier
@@ -601,7 +605,10 @@ refine flow BACNET_Flow += {
                     if ( ${tags[0].tag_length} == 4 )
                         device_identifier = {${tags[0].tag_data}};
                     
-                    uint8 max_apdu = ${tags[1].tag_data[0]};
+                    // Max-APDU-Length-Accepted is an unsigned of 1-2 bytes
+                    // (50..1476); reading only tag_data[0] truncated the high
+                    // byte, so 480 (0x01E0) decoded as 1. Decode the full value.
+                    uint32 max_apdu = get_unsigned(${tags[1].tag_data});
                     uint8 segmentation_supported = ${tags[2].tag_data[0]};
                     uint32 vendor_id = get_unsigned(${tags[3].tag_data});
                 

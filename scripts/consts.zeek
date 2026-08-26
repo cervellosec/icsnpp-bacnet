@@ -650,6 +650,7 @@ export {
         [349] = "covu-period",
         [350] = "covu-recipients",
         [351] = "event-message-texts",
+        [372] = "serial-number",
     } &default = function(n: count): string {return fmt("Vendor Specific (%d)", n); };
 
     ###############################################################################################
@@ -769,6 +770,7 @@ export {
         [28] = "load-control",
         [29] = "structured-view",
         [30] = "access-door",
+        [31] = "timer",
         [32] = "access-credential",
         [33] = "access-point",
         [34] = "access-rights",
@@ -788,6 +790,20 @@ export {
         [48] = "positive-integer-value",
         [49] = "time-pattern-value",
         [50] = "time-value",
+        [51] = "notification-forwarder",
+        [52] = "alert-enrollment",
+        [53] = "channel",
+        [54] = "lighting-output",
+        [55] = "binary-lighting-output",
+        [56] = "network-port",
+        [57] = "elevator-group",
+        [58] = "escalator",
+        [59] = "lift",
+        [60] = "staging",
+        [61] = "audit-log",
+        [62] = "audit-reporter",
+        [63] = "color",
+        [64] = "color-temperature",
     } &default = function(n: count): string {return fmt("Unknown Object Type-0x%02x", n); };
 
 

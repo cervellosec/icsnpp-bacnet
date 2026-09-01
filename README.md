@@ -1,3 +1,10 @@
+# Build Status
+
+| Source       | `main` Status | `main` Timestamp |
+|--------------|--------------|------------|
+| **CISAGOV** | ![Build Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fcisagov%2Ficsnpp-bacnet%2Fcommits%2Fmain%2Fstatus&query=state&label=build) | ![Last Build](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fcisagov%2Ficsnpp-bacnet%2Fcommits%2Fmain%2Fstatus&query=statuses[0].updated_at&label=last%20build&color=lightgrey) |
+| **Development** | ![Build Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fparsitects%2Ficsnpp-bacnet%2Fcommits%2Fmain%2Fstatus&query=state&label=build) | ![Last Build](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fparsitects%2Ficsnpp-bacnet%2Fcommits%2Fmain%2Fstatus&query=statuses[0].updated_at&label=last%20build&color=lightgrey) |
+
 # ICSNPP-BACnet
 
 Industrial Control Systems Network Protocol Parsers (ICSNPP) - BACnet.
@@ -141,6 +148,8 @@ This log captures important fields for Who-Is, I-Am, Who-Has, and I-Have message
 | destination_h     | address   | Destination IP address (see *Source and Destination Fields*)    |
 | destination_p     | port      | Destination Port (see *Source and Destination Fields*)          |
 | pdu_service       | string    | APDU service choice (who-is, i-am, who-has, or i-have)          |
+| device_id_type    | string    | BACnet device's type                                          |
+| device_id_number  | count     | BACnet device's instance number                               |
 | object_type       | string    | BACnet device's object type                                     |
 | instance_number   | count     | BACnet device's instance number                                 |
 | vendor            | string    | BACnet device's vendor name                                     |
@@ -167,8 +176,6 @@ This log captures important variables for Read-Property-Request, Read-Property-A
 | destination_p     | port      | Destination Port (see *Source and Destination Fields*)        |
 | invoke_id         | count     | Unique ID for all outstanding confirmed request/ACK APDUs     |
 | pdu_service       | string    | APDU service choice (read or write property services)         |
-| device_id_type    | string    | BACnet device's type                                          |
-| device_id_number  | count     | BACnet device's instance number                               |
 | object_type       | string    | BACnet device's object type                                   |
 | instance_number   | count     | BACnet device's object instance number                        |
 | property          | string    | Property type                                                 |

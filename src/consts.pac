@@ -116,7 +116,12 @@ enum confirmed_service_choice
     LIFE_SAFETY_OPERATION                   = 0x1B,
     SUBSCRIBE_COV_PROPERTY                  = 0x1C,
     GET_EVENT_INFORMATION                   = 0x1D,
-}
+    SUBSCRIBE_COV_PROPERTY_MULTIPLE         = 0x1E,
+    CONFIRMED_COV_NOTIFICATION_MULTIPLE     = 0x1F,
+    # ===============================
+    # ADD NEW SERVICE CODES ABOVE THIS LINE
+    CONFIRMED_SERVICE_CHOICE_MAX,
+};
 
 ############################################################
 ##############  Unconfirmed Service Choices  ###############
@@ -135,7 +140,12 @@ enum unconfirmed_service_choice
     UTC_TIME_SYNCHRONIZATION                = 0x09,
     WRITE_GROUP                             = 0x0A,
     UNCONFIRMED_COV_NOTIFICATION_MULTIPLE   = 0x0B,
-}
+    WHO_AM_I                                = 0x0D,
+    YOU_ARE                                 = 0x0E,
+    # ===============================
+    # ADD NEW SERVICE CODES ABOVE THIS LINE
+    UNCONFIRMED_SERVICE_CHOICE_MAX,
+};
 
 ############################################################
 ####################  NPDU Message Types  ##################
@@ -162,4 +172,4 @@ enum npdu_message_types
     NET_MSG_SET_MKEY      = 0x11,
     NET_MSG_WHAT_NETNR    = 0x12,
     NET_MSG_NETNR_IS      = 0x13
-}
+};

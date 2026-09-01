@@ -20,31 +20,31 @@ export {
     ################################  BACnet_Header -> bacnet.log  ################################
     ###############################################################################################
     type BACnet_Header: record {
-        ts                      : time            &log;             # Timestamp of event
-        uid                     : string          &log;             # Zeek unique ID for connection
-        packet_id               : string          &log;             # Random ID to link related logs from same packet
-        id                      : conn_id         &log;             # Zeek connection struct (addresses and ports)
-        is_orig                 : bool            &log;             # the message came from the originator/client or the responder/server
-        source_h                : addr            &log;             # Source IP Address
-        source_p                : port            &log;             # Source Port
-        destination_h           : addr            &log;             # Destination IP Address
-        destination_p           : port            &log;             # Destination Port
-        bvlc_function           : string          &log;             # BVLC function (see bvlc_functions)
-        pdu_type                : string          &log;             # APDU type (see apdu_types)
-        pdu_service             : string          &log;             # APDU service (see unconfirmed_service_choice and confirmed_service_choice)
-        invoke_id               : count           &log;             # Invoke ID
-        result_code             : string          &log;             # See (abort_reasons, reject_reasons, and error_codes)
-        forwarded_bacnet_ip     : addr            &log &optional;   # Forwarded BACnet IP Address
-        forwarded_bacnet_port   : port            &log &optional;   # Forwarded BACnet Port
-        destination_networks    : vector of count &log &optional;   # Vector of Destination Network Number
-        npdu_message_data       : string          &log &optional;   # NPDU Message Data
-        npdu_dnet               : count           &log &optional;   # NPDU Destination Network Number
-        npdu_dlen               : count           &log &optional;   # NPDU Destination Length
-        npdu_dadr               : string          &log &optional;   # NPDU Destination Address
-        npdu_snet               : count           &log &optional;   # NPDU Source Network Number
-        npdu_slen               : count           &log &optional;   # NPDU Source Length
-        npdu_sadr               : string          &log &optional;   # NPDU Source Address
-        npdu_hop_count          : count           &log &optional;   # NPDU Hop Count
+        ts                      : time            &log;             ##< Timestamp of event
+        uid                     : string          &log;             ##< Zeek unique ID for connection
+        packet_id               : string          &log;             ##< Random ID to link related logs from same packet
+        id                      : conn_id         &log;             ##< Zeek connection struct (addresses and ports)
+        is_orig                 : bool            &log;             ##< the message came from the originator/client or the responder/server
+        source_h                : addr            &log;             ##< Source IP Address
+        source_p                : port            &log;             ##< Source Port
+        destination_h           : addr            &log;             ##< Destination IP Address
+        destination_p           : port            &log;             ##< Destination Port
+        bvlc_function           : string          &log;             ##< BVLC function (see bvlc_functions)
+        pdu_type                : string          &log;             ##< APDU type (see apdu_types)
+        pdu_service             : string          &log;             ##< APDU service (see unconfirmed_service_choice and confirmed_service_choice)
+        invoke_id               : count           &log;             ##< Invoke ID
+        result_code             : string          &log;             ##< See (abort_reasons, reject_reasons, and error_codes)
+        forwarded_bacnet_ip     : addr            &log &optional;   ##< Forwarded BACnet IP Address
+        forwarded_bacnet_port   : port            &log &optional;   ##< Forwarded BACnet Port
+        destination_networks    : vector of count &log &optional;   ##< Vector of Destination Network Number
+        npdu_message_data       : string          &log &optional;   ##< NPDU Message Data
+        npdu_dnet               : count           &log &optional;   ##< NPDU Destination Network Number
+        npdu_dlen               : count           &log &optional;   ##< NPDU Destination Length
+        npdu_dadr               : string          &log &optional;   ##< NPDU Destination Address
+        npdu_snet               : count           &log &optional;   ##< NPDU Source Network Number
+        npdu_slen               : count           &log &optional;   ##< NPDU Source Length
+        npdu_sadr               : string          &log &optional;   ##< NPDU Source Address
+        npdu_hop_count          : count           &log &optional;   ##< NPDU Hop Count
     };
 
     global log_bacnet: event(rec: BACnet_Header);
@@ -53,23 +53,23 @@ export {
     ##################  Who-Is, I-Am, Who-Has, & I-Have -> bacnet_discovery.log  ##################
     ###############################################################################################
     type BACnet_Discovery: record {
-        ts                      : time      &log;   # Timestamp of event
-        uid                     : string    &log;   # Zeek unique ID for connection
-        packet_id               : string    &log;   # Random ID to link related logs from same packet
-        id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
-        is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
-        source_h                : addr      &log;   # Source IP Address
-        source_p                : port      &log;   # Source Port
-        destination_h           : addr      &log;   # Destination IP Address
-        destination_p           : port      &log;   # Destination Port
-        pdu_service             : string    &log;   # who-is, i-am, who-has, or i-have
-        device_id_type          : string    &log;   # BACnetObjectIdentifier device (see object_types)
-        device_id_number        : count     &log;   # BACnetObjectIdentifier device instance number
-        object_type             : string    &log;   # BACnetObjectIdentifier object (see object_types)
-        instance_number         : count     &log;   # BACnetObjectIdentifier object instance number
-        vendor                  : string    &log;   # Vendor Name (i-am and i-have requests)
-        range                   : string    &log;   # Specify range of devices to return (in who-is and who-has requests)
-        object_name             : string    &log;   # Object name searching for (who-has) or responding with (i-have)
+        ts                      : time      &log;   ##< Timestamp of event
+        uid                     : string    &log;   ##< Zeek unique ID for connection
+        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
+        id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
+        is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
+        source_h                : addr      &log;   ##< Source IP Address
+        source_p                : port      &log;   ##< Source Port
+        destination_h           : addr      &log;   ##< Destination IP Address
+        destination_p           : port      &log;   ##< Destination Port
+        pdu_service             : string    &log;   ##< who-is, i-am, who-has, or i-have
+        device_id_type          : string    &log;   ##< BACnetObjectIdentifier device (see object_types)
+        device_id_number        : count     &log;   ##< BACnetObjectIdentifier device instance number
+        object_type             : string    &log;   ##< BACnetObjectIdentifier object (see object_types)
+        instance_number         : count     &log;   ##< BACnetObjectIdentifier object instance number
+        vendor                  : string    &log;   ##< Vendor Name (i-am and i-have requests)
+        range                   : string    &log;   ##< Specify range of devices to return (in who-is and who-has requests)
+        object_name             : string    &log;   ##< Object name searching for (who-has) or responding with (i-have)
     };
     global log_bacnet_discovery: event(rec: BACnet_Discovery);
 
@@ -77,22 +77,22 @@ export {
     ###################  Read-Property & Write-Property -> bacnet_property.log  ###################
     ###############################################################################################
     type BACnet_Property: record {
-        ts                      : time      &log;   # Timestamp of event
-        uid                     : string    &log;   # Zeek unique ID for connection
-        packet_id               : string    &log;   # Random ID to link related logs from same packet
-        id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
-        is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
-        source_h                : addr      &log;   # Source IP Address
-        source_p                : port      &log;   # Source Port
-        destination_h           : addr      &log;   # Destination IP Address
-        destination_p           : port      &log;   # Destination Port
-        invoke_id               : count     &log;   # invoke ID for help matching requests/responses
-        pdu_service             : string    &log;   # read-property-request/ack, write-property-request
-        object_type             : string    &log;   # BACnetObjectIdentifier object (see object_types)
-        instance_number         : count     &log;   # BACnetObjectIdentifier instance number
-        property                : string    &log;   # Property type (see property_identifiers)
-        array_index             : count     &log;   # Array index of property
-        value                   : string    &log;   # Value of property
+        ts                      : time      &log;   ##< Timestamp of event
+        uid                     : string    &log;   ##< Zeek unique ID for connection
+        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
+        id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
+        is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
+        source_h                : addr      &log;   ##< Source IP Address
+        source_p                : port      &log;   ##< Source Port
+        destination_h           : addr      &log;   ##< Destination IP Address
+        destination_p           : port      &log;   ##< Destination Port
+        invoke_id               : count     &log;   ##< invoke ID for help matching requests/responses
+        pdu_service             : string    &log;   ##< read-property-request/ack, write-property-request
+        object_type             : string    &log;   ##< BACnetObjectIdentifier object (see object_types)
+        instance_number         : count     &log;   ##< BACnetObjectIdentifier instance number
+        property                : string    &log;   ##< Property type (see property_identifiers)
+        array_index             : count     &log;   ##< Array index of property
+        value                   : string    &log;   ##< Value of property
     };
     global log_bacnet_property: event(rec: BACnet_Property);
 
@@ -100,22 +100,22 @@ export {
     #########  Reinitialize-Device & Device-Communication-Control -> bacnet_property.log  #########
     ###############################################################################################
     type BACnet_Device_Control: record {
-        ts                      : time      &log;   # Timestamp of event
-        uid                     : string    &log;   # Zeek unique ID for connection
-        packet_id               : string    &log;   # Random ID to link related logs from same packet
-        id                      : conn_id   &log;   # Zeek connection struct (addresses and ports)
-        is_orig                 : bool      &log;   # the message came from the originator/client or the responder/server
-        source_h                : addr      &log;   # Source IP Address
-        source_p                : port      &log;   # Source Port
-        destination_h           : addr      &log;   # Destination IP Address
-        destination_p           : port      &log;   # Destination Port
-        invoke_id               : count     &log;   # invoke ID for help matching requests/responses
-        pdu_service             : string    &log;   # reinitialize_device or device_communication_control
-        time_duration           : count     &log;   # number of minutes remote device should ignore other APDUs
-        device_state            : string    &log;   # state to put device into
-        password                : string    &log;   # password
-        result                  : string    &log;   # Success, Error, Reject, or Abort
-        result_code             : string    &log;   # resulting Error/Reject/Abort Code
+        ts                      : time      &log;   ##< Timestamp of event
+        uid                     : string    &log;   ##< Zeek unique ID for connection
+        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
+        id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
+        is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
+        source_h                : addr      &log;   ##< Source IP Address
+        source_p                : port      &log;   ##< Source Port
+        destination_h           : addr      &log;   ##< Destination IP Address
+        destination_p           : port      &log;   ##< Destination Port
+        invoke_id               : count     &log;   ##< invoke ID for help matching requests/responses
+        pdu_service             : string    &log;   ##< reinitialize_device or device_communication_control
+        time_duration           : count     &log;   ##< number of minutes remote device should ignore other APDUs
+        device_state            : string    &log;   ##< state to put device into
+        password                : string    &log;   ##< password
+        result                  : string    &log;   ##< Success, Error, Reject, or Abort
+        result_code             : string    &log;   ##< resulting Error/Reject/Abort Code
     };
     global log_bacnet_device_control: event(rec: BACnet_Device_Control);
 
@@ -215,6 +215,7 @@ event bacnet_apdu_header(c: connection,
     switch(pdu_type){
         case 5:
             bacnet_log$result_code = error_codes[result_code];
+            bacnet_log$pdu_service = "error";
             fallthrough;
         case 0:
             fallthrough;
@@ -228,9 +229,11 @@ event bacnet_apdu_header(c: connection,
             break;
         case 6:
             bacnet_log$result_code = reject_reasons[result_code];
+            bacnet_log$pdu_service = "reject";
             break;
         case 7:
             bacnet_log$result_code = abort_reasons[result_code];
+            bacnet_log$pdu_service = "abort";
             break;
         default:
             break;

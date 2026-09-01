@@ -248,6 +248,31 @@ event bacnet_apdu_header(c: connection,
 }
 
 ###################################################################################################
+###  Correlates an NPDU source address with a service event parsed from the same packet.       ###
+###  NPDU_Source is parsed before the APDU, so bacnet_npdu_source reaches Zeek before the       ###
+###  service event (e.g. I-Am) that wants the (network, MAC) address of the announcing device.  ###
+###  The trailing bacnet_npdu_header event clears the entry once the packet is fully parsed, so ###
+###  a source captured for one packet can never leak into a later one on the same connection.   ###
+###################################################################################################
+type NPDUSource: record {
+    snet: count;
+    slen: count;
+    sadr: string;
+};
+global npdu_source_pending: table[string] of NPDUSource;
+
+event bacnet_npdu_source(c: connection,
+                         snet: count,
+                         slen: count,
+                         sadr: string){
+    npdu_source_pending[c$uid] = NPDUSource($snet = snet, $slen = slen, $sadr = sadr);
+}
+
+event connection_state_remove(c: connection){
+    delete npdu_source_pending[c$uid];
+}
+
+###################################################################################################
 ###################  Defines logging of bacnet_npdu_header event -> bacnet.log  ###################
 ###################################################################################################
 event bacnet_npdu_header(c: connection,
@@ -332,6 +357,10 @@ event bacnet_npdu_header(c: connection,
         bacnet_log$npdu_hop_count = hop_count;
 
     Log::write(LOG_BACNET, bacnet_log);
+
+    # The packet's NPDU is fully parsed now; drop any source captured for an
+    # in-packet service event so it cannot leak into a later packet.
+    delete npdu_source_pending[c$uid];
 }
 
 ###################################################################################################
@@ -385,10 +414,7 @@ event bacnet_i_am(c: connection,
                   instance_number: count,
                   max_apdu: count,
                   segmentation: count,
-                  vendor_id: count,
-                  npdu_snet: count,
-                  npdu_slen: count,
-                  npdu_sadr: string){
+                  vendor_id: count){
 
     set_service(c);
     local bacnet_discovery: BACnet_Discovery;
@@ -425,13 +451,16 @@ event bacnet_i_am(c: connection,
     if(segmentation != UINT32_MAX)
         bacnet_discovery$segmentation = segmentation_supported_status[segmentation];
 
-    # NPDU source of the announcing device: 0xFFFF snet means the I-Am was not
-    # routed (the device is local, addressed by its IP), so leave it unset.
-    if(npdu_snet != 0xFFFF)
+    # NPDU source of the announcing device, captured from this packet's NPDU
+    # header before the APDU was parsed (see bacnet_npdu_source). No entry means
+    # the I-Am was not routed (the device is local, addressed by its IP), so
+    # leave the fields unset.
+    if(c$uid in npdu_source_pending)
     {
-        bacnet_discovery$npdu_snet = npdu_snet;
-        bacnet_discovery$npdu_slen = npdu_slen;
-        bacnet_discovery$npdu_sadr = npdu_sadr;
+        local npdu_src = npdu_source_pending[c$uid];
+        bacnet_discovery$npdu_snet = npdu_src$snet;
+        bacnet_discovery$npdu_slen = npdu_src$slen;
+        bacnet_discovery$npdu_sadr = npdu_src$sadr;
     }
 
     Log::write(LOG_BACNET_DISCOVERY, bacnet_discovery);

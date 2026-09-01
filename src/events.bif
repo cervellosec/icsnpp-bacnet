@@ -106,10 +106,26 @@ event bacnet_i_am%(c: connection,
                    instance_number: count,
                    max_apdu: count,
                    segmentation: count,
-                   vendor_id: count,
-                   npdu_snet: count,
-                   npdu_slen: count,
-                   npdu_sadr: string%);
+                   vendor_id: count%);
+
+## ---------------------------------------bacnet-npdu-source---------------------------------------
+## Event Description:
+##      Raised while the NPDU header is parsed (before the APDU), carrying the source
+##      (network, MAC) address of a routed message. main.zeek stashes it per connection
+##      so a following service event in the same packet (e.g. I-Am) can record where the
+##      announcing device sits, without the parser having to thread the fields through.
+## Event Data:
+##      - c:                    connection  -> Zeek Connection Struct
+##      - snet:                 count       -> NPDU Source Network Number
+##      - slen:                 count       -> NPDU Source Address length in bytes
+##      - sadr:                 string      -> NPDU Source Address (raw bytes; e.g. the MS/TP MAC)
+## Default Output:
+##      None (internal correlation only)
+## ------------------------------------------------------------------------------------------------
+event bacnet_npdu_source%(c: connection,
+                          snet: count,
+                          slen: count,
+                          sadr: string%);
 
 ## -----------------------------------------bacnet-who-is------------------------------------------
 ## Event Description:

@@ -428,10 +428,10 @@ type NPDU_Source = record {
     SLEN        : uint8;
     SADR        : bytestring &length = SLEN;
 } &let {
-    # Capture the source into the flow so an I-Am inside this same packet can log
-    # the (network, MAC) address the announcing device sits at. NPDU_Source is
-    # parsed before the APDU, so this runs before process_i_am.
-    capture: bool = $context.flow.set_current_npdu_source(SNET, SLEN, SADR);
+    # Raise bacnet_npdu_source so a service event in this same packet (e.g. I-Am)
+    # can record the (network, MAC) address the routed device sits at. NPDU_Source
+    # is parsed before the APDU, so this event reaches Zeek before process_i_am.
+    emit: bool = $context.flow.emit_npdu_source(SNET, SLEN, SADR);
 }
 
 

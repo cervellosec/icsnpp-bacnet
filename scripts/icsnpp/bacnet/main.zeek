@@ -20,19 +20,31 @@ export {
     ################################  BACnet_Header -> bacnet.log  ################################
     ###############################################################################################
     type BACnet_Header: record {
-        ts                      : time      &log;   ##< Timestamp of event
-        uid                     : string    &log;   ##< Zeek unique ID for connection
-        id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
-        is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
-        source_h                : addr      &log;   ##< Source IP Address
-        source_p                : port      &log;   ##< Source Port
-        destination_h           : addr      &log;   ##< Destination IP Address
-        destination_p           : port      &log;   ##< Destination Port
-        bvlc_function           : string    &log;   ##< BVLC function (see bvlc_functions)
-        pdu_type                : string    &log;   ##< APDU type (see apdu_types)
-        pdu_service             : string    &log;   ##< APDU service (see unconfirmed_service_choice and confirmed_service_choice)
-        invoke_id               : count     &log;   ##< Invoke ID
-        result_code             : string    &log;   ##< See (abort_reasons, reject_reasons, and error_codes)
+        ts                      : time            &log;             ##< Timestamp of event
+        uid                     : string          &log;             ##< Zeek unique ID for connection
+        packet_id               : string          &log;             ##< Random ID to link related logs from same packet
+        id                      : conn_id         &log;             ##< Zeek connection struct (addresses and ports)
+        is_orig                 : bool            &log;             ##< the message came from the originator/client or the responder/server
+        source_h                : addr            &log;             ##< Source IP Address
+        source_p                : port            &log;             ##< Source Port
+        destination_h           : addr            &log;             ##< Destination IP Address
+        destination_p           : port            &log;             ##< Destination Port
+        bvlc_function           : string          &log;             ##< BVLC function (see bvlc_functions)
+        pdu_type                : string          &log;             ##< APDU type (see apdu_types)
+        pdu_service             : string          &log;             ##< APDU service (see unconfirmed_service_choice and confirmed_service_choice)
+        invoke_id               : count           &log;             ##< Invoke ID
+        result_code             : string          &log;             ##< See (abort_reasons, reject_reasons, and error_codes)
+        forwarded_bacnet_ip     : addr            &log &optional;   ##< Forwarded BACnet IP Address
+        forwarded_bacnet_port   : port            &log &optional;   ##< Forwarded BACnet Port
+        destination_networks    : vector of count &log &optional;   ##< Vector of Destination Network Number
+        npdu_message_data       : string          &log &optional;   ##< NPDU Message Data
+        npdu_dnet               : count           &log &optional;   ##< NPDU Destination Network Number
+        npdu_dlen               : count           &log &optional;   ##< NPDU Destination Length
+        npdu_dadr               : string          &log &optional;   ##< NPDU Destination Address
+        npdu_snet               : count           &log &optional;   ##< NPDU Source Network Number
+        npdu_slen               : count           &log &optional;   ##< NPDU Source Length
+        npdu_sadr               : string          &log &optional;   ##< NPDU Source Address
+        npdu_hop_count          : count           &log &optional;   ##< NPDU Hop Count
     };
 
     global log_bacnet: event(rec: BACnet_Header);
@@ -43,6 +55,7 @@ export {
     type BACnet_Discovery: record {
         ts                      : time      &log;   ##< Timestamp of event
         uid                     : string    &log;   ##< Zeek unique ID for connection
+        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
         id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
         source_h                : addr      &log;   ##< Source IP Address
@@ -66,6 +79,7 @@ export {
     type BACnet_Property: record {
         ts                      : time      &log;   ##< Timestamp of event
         uid                     : string    &log;   ##< Zeek unique ID for connection
+        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
         id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
         source_h                : addr      &log;   ##< Source IP Address
@@ -88,6 +102,7 @@ export {
     type BACnet_Device_Control: record {
         ts                      : time      &log;   ##< Timestamp of event
         uid                     : string    &log;   ##< Zeek unique ID for connection
+        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
         id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
         source_h                : addr      &log;   ##< Source IP Address
@@ -156,6 +171,7 @@ function set_service(c: connection) {
 ###################################################################################################
 event bacnet_apdu_header(c: connection,
                          is_orig: bool,
+                         packet_id: string,
                          bvlc_function: count,
                          pdu_type: count,
                          pdu_service: count,
@@ -168,6 +184,7 @@ event bacnet_apdu_header(c: connection,
     bacnet_log$ts  = network_time();
     bacnet_log$uid = c$uid;
     bacnet_log$id  = c$id;
+    bacnet_log$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -230,8 +247,24 @@ event bacnet_apdu_header(c: connection,
 ###################################################################################################
 event bacnet_npdu_header(c: connection,
                          is_orig: bool,
+                         packet_id: string,
                          bvlc_function: count,
-                         npdu_message_type: count){
+                         forwarded_bacnet_ip: count,
+                         forwarded_bacnet_port: count,
+                         has_npdu_message: bool,
+                         npdu_message_type: count,
+                         destination_networks: index_vec,
+                         npdu_message_data: string,
+                         has_destination: bool,
+                         dnet: count,
+                         dlen: count,
+                         dadr: string,
+                         has_source: bool,
+                         snet: count,
+                         slen: count,
+                         sadr: string,
+                         has_hop_count: bool,
+                         hop_count: count){
 
     set_service(c);
     local bacnet_log: BACnet_Header;
@@ -239,6 +272,7 @@ event bacnet_npdu_header(c: connection,
     bacnet_log$ts  = network_time();
     bacnet_log$uid = c$uid;
     bacnet_log$id  = c$id;
+    bacnet_log$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -254,10 +288,43 @@ event bacnet_npdu_header(c: connection,
         bacnet_log$destination_p    = c$id$orig_p;
     }
 
+    bacnet_log$pdu_type = "NPDU";
     bacnet_log$bvlc_function = bvlc_functions[bvlc_function];
 
-    bacnet_log$pdu_type = "NPDU";
-    bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+    # If the BVLC function is 0x04, then the NPDU is a forwarded NPDU
+    if (bvlc_function == 0x04) {
+        bacnet_log$forwarded_bacnet_ip = count_to_v4_addr(forwarded_bacnet_ip);
+        bacnet_log$forwarded_bacnet_port = count_to_port(forwarded_bacnet_port, udp);
+    }
+
+    if (has_npdu_message) {
+        bacnet_log$pdu_service = npdu_message_types[npdu_message_type];
+
+        if (|destination_networks| > 0) {
+            bacnet_log$destination_networks = destination_networks;
+        }
+
+        if (|npdu_message_data| > 0) {
+            bacnet_log$npdu_message_data = npdu_message_data;
+        }
+    }
+
+    if (has_destination)
+    {
+        bacnet_log$npdu_dnet = dnet;
+        bacnet_log$npdu_dlen = dlen;
+        bacnet_log$npdu_dadr = dadr;
+    }
+
+    if (has_source)
+    {
+        bacnet_log$npdu_snet = snet;
+        bacnet_log$npdu_slen = slen;
+        bacnet_log$npdu_sadr = sadr;
+    }
+
+    if (has_hop_count)
+        bacnet_log$npdu_hop_count = hop_count;
 
     Log::write(LOG_BACNET, bacnet_log);
 }
@@ -266,9 +333,10 @@ event bacnet_npdu_header(c: connection,
 ################  Defines logging of bacnet_who_is event -> bacnet_discovery.log  #################
 ###################################################################################################
 event bacnet_who_is(c: connection,
-                    is_orig: bool,
-                    low_limit: count,
-                    high_limit: count){
+                     is_orig: bool,
+                     packet_id: string,
+                     low_limit: count,
+                     high_limit: count){
 
     set_service(c);
     local bacnet_discovery: BACnet_Discovery;
@@ -276,6 +344,7 @@ event bacnet_who_is(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -306,6 +375,7 @@ event bacnet_who_is(c: connection,
 ###################################################################################################
 event bacnet_i_am(c: connection,
                   is_orig: bool,
+                  packet_id: string,
                   object_type: count,
                   instance_number: count,
                   max_apdu: count,
@@ -318,6 +388,7 @@ event bacnet_i_am(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -348,6 +419,7 @@ event bacnet_i_am(c: connection,
 ###################################################################################################
 event bacnet_who_has(c: connection,
                      is_orig: bool,
+                     packet_id: string,
                      low_limit: count,
                      high_limit: count,
                      object_type: count,
@@ -360,6 +432,7 @@ event bacnet_who_has(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -400,6 +473,7 @@ event bacnet_who_has(c: connection,
 ###################################################################################################
 event bacnet_i_have(c: connection,
                     is_orig: bool,
+                    packet_id: string,
                     device_object_type: count,
                     device_instance_num: count,
                     object_object_type: count,
@@ -412,6 +486,7 @@ event bacnet_i_have(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
+    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -451,6 +526,7 @@ event bacnet_i_have(c: connection,
 ###################################################################################################
 event bacnet_read_property(c: connection,
                            is_orig: bool,
+                           packet_id: string,
                            invoke_id: count,
                            pdu_service: string,
                            object_type: count,
@@ -464,6 +540,7 @@ event bacnet_read_property(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -497,6 +574,7 @@ event bacnet_read_property(c: connection,
 ###################################################################################################
 event bacnet_read_property_ack(c: connection,
                                is_orig: bool,
+                               packet_id: string,
                                invoke_id: count,
                                pdu_service: string,
                                object_type: count,
@@ -511,6 +589,7 @@ event bacnet_read_property_ack(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -580,6 +659,7 @@ event bacnet_read_property_ack(c: connection,
 ###################################################################################################
 event bacnet_write_property(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count,
@@ -594,6 +674,7 @@ event bacnet_write_property(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -663,6 +744,7 @@ event bacnet_write_property(c: connection,
 ###################################################################################################
 event bacnet_property_error(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             pdu_type: count,
                             pdu_service: count,
@@ -674,6 +756,7 @@ event bacnet_property_error(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -700,6 +783,7 @@ event bacnet_property_error(c: connection,
 
 event bacnet_read_range(c: connection,
                         is_orig: bool,
+                        packet_id: string,
                         invoke_id: count,
                         object_type: count,
                         instance_number: count,
@@ -712,6 +796,7 @@ event bacnet_read_range(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -743,6 +828,7 @@ event bacnet_read_range(c: connection,
 
 event bacnet_read_range_ack(c: connection,
                             is_orig: bool,
+                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count,
@@ -757,6 +843,7 @@ event bacnet_read_range_ack(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
+    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -793,6 +880,7 @@ event bacnet_read_range_ack(c: connection,
 ###################################################################################################
 event bacnet_reinitialize_device(c: connection,
                                  is_orig: bool,
+                                 packet_id: string,
                                  invoke_id: count,
                                  reinitialized_state: count,
                                  password: string){
@@ -803,6 +891,7 @@ event bacnet_reinitialize_device(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
+    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -833,6 +922,7 @@ event bacnet_reinitialize_device(c: connection,
 ###################################################################################################
 event bacnet_device_control_response(c: connection,
                                      is_orig: bool,
+                                     packet_id: string,
                                      invoke_id: count,
                                      pdu_service: count,
                                      pdu_type: count,
@@ -844,6 +934,7 @@ event bacnet_device_control_response(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
+    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -890,6 +981,7 @@ event bacnet_device_control_response(c: connection,
 ###################################################################################################
 event bacnet_device_communication_control(c: connection,
                                           is_orig: bool,
+                                          packet_id: string,
                                           invoke_id: count,
                                           time_duration: count,
                                           enable_disable: count,
@@ -901,6 +993,7 @@ event bacnet_device_communication_control(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
+    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {

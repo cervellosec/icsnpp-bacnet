@@ -5,24 +5,44 @@
 #unset_field	-
 #path	bacnet
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	is_orig	source_h	source_p	destination_h	destination_p	bvlc_function	pdu_type	pdu_service	invoke_id	result_code
-#types	time	string	addr	port	addr	port	bool	addr	port	addr	port	string	string	string	count	string
-XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_have	-	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	who_has	-	-
-XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_have	-	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	who_is	-	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
-XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	time_synchronization	-	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	CONFIRMED_REQUEST	read_property	93	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	COMPLEX_ACK	read_property	93	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	CONFIRMED_REQUEST	read_property	94	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	SEGMENT_ACK	-	94	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	COMPLEX_ACK	read_property	94	-
-XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	SEGMENT_ACK	-	94	-
-XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	is_orig	source_h	source_p	destination_h	destination_p	bvlc_function	pdu_type	pdu_service	invoke_id	result_code	forwarded_bacnet_ip	forwarded_bacnet_port	destination_networks	npdu_message_data	npdu_dnet	npdu_dlen	npdu_dadr	npdu_snet	npdu_slen	npdu_sadr	npdu_hop_count
+#types	time	string	addr	port	addr	port	bool	addr	port	addr	port	string	string	string	count	string	addr	port	vector[count]	string	count	count	string	count	count	string	count
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_have	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	who_has	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_have	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	who_is	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	10.0.0.2	47808	10.0.0.255	47808	T	10.0.0.2	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	time_synchronization	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	CONFIRMED_REQUEST	read_property	93	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	COMPLEX_ACK	read_property	93	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	CONFIRMED_REQUEST	read_property	94	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	SEGMENT_ACK	-	94	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	COMPLEX_ACK	read_property	94	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	T	10.0.0.2	47808	10.0.0.1	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	SEGMENT_ACK	-	94	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	C4J4Th3PJpwUYZZ6gc	10.0.0.2	47808	10.0.0.1	47808	F	10.0.0.1	47808	10.0.0.2	47808	Original_Unicast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	UNCONFIRMED_REQUEST	i_am	-	-	-	-	-	-	-	-	-	-	-	-	-
+XXXXXXXXXX.XXXXXX	ClEkJM2Vm5giqnMf4h	10.0.0.1	47808	10.0.0.255	47808	T	10.0.0.1	47808	10.0.0.255	47808	Original_Broadcast_NPDU	NPDU	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 #close XXXX-XX-XX-XX-XX-XX

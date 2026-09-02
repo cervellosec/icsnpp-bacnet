@@ -22,7 +22,6 @@ export {
     type BACnet_Header: record {
         ts                      : time            &log;             ##< Timestamp of event
         uid                     : string          &log;             ##< Zeek unique ID for connection
-        packet_id               : string          &log;             ##< Random ID to link related logs from same packet
         id                      : conn_id         &log;             ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool            &log;             ##< the message came from the originator/client or the responder/server
         source_h                : addr            &log;             ##< Source IP Address
@@ -55,7 +54,6 @@ export {
     type BACnet_Discovery: record {
         ts                      : time      &log;   ##< Timestamp of event
         uid                     : string    &log;   ##< Zeek unique ID for connection
-        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
         id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
         source_h                : addr      &log;   ##< Source IP Address
@@ -70,6 +68,11 @@ export {
         vendor                  : string    &log;   ##< Vendor Name (i-am and i-have requests)
         range                   : string    &log;   ##< Specify range of devices to return (in who-is and who-has requests)
         object_name             : string    &log;   ##< Object name searching for (who-has) or responding with (i-have)
+        npdu_snet               : count     &log &optional;   ##< NPDU Source Network Number of the announcing device (i-am)
+        npdu_slen               : count     &log &optional;   ##< NPDU Source Length
+        npdu_sadr               : string    &log &optional;   ##< NPDU Source Address (MS/TP MAC of the announcing device)
+        max_apdu                : count     &log &optional;   ##< Max APDU length accepted (i-am)
+        segmentation            : string    &log &optional;   ##< Segmentation support (i-am; see segmentation_supported_status)
     };
     global log_bacnet_discovery: event(rec: BACnet_Discovery);
 
@@ -79,7 +82,6 @@ export {
     type BACnet_Property: record {
         ts                      : time      &log;   ##< Timestamp of event
         uid                     : string    &log;   ##< Zeek unique ID for connection
-        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
         id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
         source_h                : addr      &log;   ##< Source IP Address
@@ -102,7 +104,6 @@ export {
     type BACnet_Device_Control: record {
         ts                      : time      &log;   ##< Timestamp of event
         uid                     : string    &log;   ##< Zeek unique ID for connection
-        packet_id               : string    &log;   ##< Random ID to link related logs from same packet
         id                      : conn_id   &log;   ##< Zeek connection struct (addresses and ports)
         is_orig                 : bool      &log;   ##< the message came from the originator/client or the responder/server
         source_h                : addr      &log;   ##< Source IP Address
@@ -171,7 +172,6 @@ function set_service(c: connection) {
 ###################################################################################################
 event bacnet_apdu_header(c: connection,
                          is_orig: bool,
-                         packet_id: string,
                          bvlc_function: count,
                          pdu_type: count,
                          pdu_service: count,
@@ -184,7 +184,6 @@ event bacnet_apdu_header(c: connection,
     bacnet_log$ts  = network_time();
     bacnet_log$uid = c$uid;
     bacnet_log$id  = c$id;
-    bacnet_log$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -243,11 +242,35 @@ event bacnet_apdu_header(c: connection,
 }
 
 ###################################################################################################
+###  Correlates an NPDU source address with a service event parsed from the same packet.       ###
+###  NPDU_Source is parsed before the APDU, so bacnet_npdu_source reaches Zeek before the       ###
+###  service event (e.g. I-Am) that wants the (network, MAC) address of the announcing device.  ###
+###  The trailing bacnet_npdu_header event clears the entry once the packet is fully parsed, so ###
+###  a source captured for one packet can never leak into a later one on the same connection.   ###
+###################################################################################################
+type NPDUSource: record {
+    snet: count;
+    slen: count;
+    sadr: string;
+};
+global npdu_source_pending: table[string] of NPDUSource;
+
+event bacnet_npdu_source(c: connection,
+                         snet: count,
+                         slen: count,
+                         sadr: string){
+    npdu_source_pending[c$uid] = NPDUSource($snet = snet, $slen = slen, $sadr = sadr);
+}
+
+event connection_state_remove(c: connection){
+    delete npdu_source_pending[c$uid];
+}
+
+###################################################################################################
 ###################  Defines logging of bacnet_npdu_header event -> bacnet.log  ###################
 ###################################################################################################
 event bacnet_npdu_header(c: connection,
                          is_orig: bool,
-                         packet_id: string,
                          bvlc_function: count,
                          forwarded_bacnet_ip: count,
                          forwarded_bacnet_port: count,
@@ -272,7 +295,6 @@ event bacnet_npdu_header(c: connection,
     bacnet_log$ts  = network_time();
     bacnet_log$uid = c$uid;
     bacnet_log$id  = c$id;
-    bacnet_log$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -327,6 +349,10 @@ event bacnet_npdu_header(c: connection,
         bacnet_log$npdu_hop_count = hop_count;
 
     Log::write(LOG_BACNET, bacnet_log);
+
+    # The packet's NPDU is fully parsed now; drop any source captured for an
+    # in-packet service event so it cannot leak into a later packet.
+    delete npdu_source_pending[c$uid];
 }
 
 ###################################################################################################
@@ -334,7 +360,6 @@ event bacnet_npdu_header(c: connection,
 ###################################################################################################
 event bacnet_who_is(c: connection,
                      is_orig: bool,
-                     packet_id: string,
                      low_limit: count,
                      high_limit: count){
 
@@ -344,7 +369,6 @@ event bacnet_who_is(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
-    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -375,7 +399,6 @@ event bacnet_who_is(c: connection,
 ###################################################################################################
 event bacnet_i_am(c: connection,
                   is_orig: bool,
-                  packet_id: string,
                   object_type: count,
                   instance_number: count,
                   max_apdu: count,
@@ -388,7 +411,6 @@ event bacnet_i_am(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
-    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -411,6 +433,24 @@ event bacnet_i_am(c: connection,
         bacnet_discovery$instance_number = instance_number;
     bacnet_discovery$vendor = vendors[vendor_id];
 
+    # Device capability fingerprint carried by every I-Am.
+    if(max_apdu != UINT32_MAX)
+        bacnet_discovery$max_apdu = max_apdu;
+    if(segmentation != UINT32_MAX)
+        bacnet_discovery$segmentation = segmentation_supported_status[segmentation];
+
+    # NPDU source of the announcing device, captured from this packet's NPDU
+    # header before the APDU was parsed (see bacnet_npdu_source). No entry means
+    # the I-Am was not routed (the device is local, addressed by its IP), so
+    # leave the fields unset.
+    if(c$uid in npdu_source_pending)
+    {
+        local npdu_src = npdu_source_pending[c$uid];
+        bacnet_discovery$npdu_snet = npdu_src$snet;
+        bacnet_discovery$npdu_slen = npdu_src$slen;
+        bacnet_discovery$npdu_sadr = npdu_src$sadr;
+    }
+
     Log::write(LOG_BACNET_DISCOVERY, bacnet_discovery);
 }
 
@@ -419,7 +459,6 @@ event bacnet_i_am(c: connection,
 ###################################################################################################
 event bacnet_who_has(c: connection,
                      is_orig: bool,
-                     packet_id: string,
                      low_limit: count,
                      high_limit: count,
                      object_type: count,
@@ -432,7 +471,6 @@ event bacnet_who_has(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
-    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -473,7 +511,6 @@ event bacnet_who_has(c: connection,
 ###################################################################################################
 event bacnet_i_have(c: connection,
                     is_orig: bool,
-                    packet_id: string,
                     device_object_type: count,
                     device_instance_num: count,
                     object_object_type: count,
@@ -486,7 +523,6 @@ event bacnet_i_have(c: connection,
     bacnet_discovery$ts  = network_time();
     bacnet_discovery$uid = c$uid;
     bacnet_discovery$id  = c$id;
-    bacnet_discovery$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -526,7 +562,6 @@ event bacnet_i_have(c: connection,
 ###################################################################################################
 event bacnet_read_property(c: connection,
                            is_orig: bool,
-                           packet_id: string,
                            invoke_id: count,
                            pdu_service: string,
                            object_type: count,
@@ -540,7 +575,6 @@ event bacnet_read_property(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
-    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -574,7 +608,6 @@ event bacnet_read_property(c: connection,
 ###################################################################################################
 event bacnet_read_property_ack(c: connection,
                                is_orig: bool,
-                               packet_id: string,
                                invoke_id: count,
                                pdu_service: string,
                                object_type: count,
@@ -589,7 +622,6 @@ event bacnet_read_property_ack(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
-    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -659,7 +691,6 @@ event bacnet_read_property_ack(c: connection,
 ###################################################################################################
 event bacnet_write_property(c: connection,
                             is_orig: bool,
-                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count,
@@ -674,7 +705,6 @@ event bacnet_write_property(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
-    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -744,7 +774,6 @@ event bacnet_write_property(c: connection,
 ###################################################################################################
 event bacnet_property_error(c: connection,
                             is_orig: bool,
-                            packet_id: string,
                             invoke_id: count,
                             pdu_type: count,
                             pdu_service: count,
@@ -756,7 +785,6 @@ event bacnet_property_error(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
-    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -783,7 +811,6 @@ event bacnet_property_error(c: connection,
 
 event bacnet_read_range(c: connection,
                         is_orig: bool,
-                        packet_id: string,
                         invoke_id: count,
                         object_type: count,
                         instance_number: count,
@@ -796,7 +823,6 @@ event bacnet_read_range(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
-    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -828,7 +854,6 @@ event bacnet_read_range(c: connection,
 
 event bacnet_read_range_ack(c: connection,
                             is_orig: bool,
-                            packet_id: string,
                             invoke_id: count,
                             object_type: count,
                             instance_number: count,
@@ -843,7 +868,6 @@ event bacnet_read_range_ack(c: connection,
     bacnet_property$ts  = network_time();
     bacnet_property$uid = c$uid;
     bacnet_property$id  = c$id;
-    bacnet_property$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -880,7 +904,6 @@ event bacnet_read_range_ack(c: connection,
 ###################################################################################################
 event bacnet_reinitialize_device(c: connection,
                                  is_orig: bool,
-                                 packet_id: string,
                                  invoke_id: count,
                                  reinitialized_state: count,
                                  password: string){
@@ -891,7 +914,6 @@ event bacnet_reinitialize_device(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
-    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -922,7 +944,6 @@ event bacnet_reinitialize_device(c: connection,
 ###################################################################################################
 event bacnet_device_control_response(c: connection,
                                      is_orig: bool,
-                                     packet_id: string,
                                      invoke_id: count,
                                      pdu_service: count,
                                      pdu_type: count,
@@ -934,7 +955,6 @@ event bacnet_device_control_response(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
-    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {
@@ -981,7 +1001,6 @@ event bacnet_device_control_response(c: connection,
 ###################################################################################################
 event bacnet_device_communication_control(c: connection,
                                           is_orig: bool,
-                                          packet_id: string,
                                           invoke_id: count,
                                           time_duration: count,
                                           enable_disable: count,
@@ -993,7 +1012,6 @@ event bacnet_device_communication_control(c: connection,
     bacnet_device_control$ts  = network_time();
     bacnet_device_control$uid = c$uid;
     bacnet_device_control$id  = c$id;
-    bacnet_device_control$packet_id = packet_id;
 
     if(is_orig)
     {

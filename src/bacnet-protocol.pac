@@ -15,8 +15,7 @@
 
 type BACNET_PDU(is_orig: bool) = record {
     bacnet : BVLC_Header(is_orig);
-} &byteorder=bigendian &let {
-}
+} &byteorder=bigendian;
 
 ###################################################################################################
 ##################################  END OF ZEEK CONNECTION DATA  ##################################
@@ -52,7 +51,7 @@ type BVLC_Header(is_orig: bool) = record {
         READ_FOREIGN_DEVICE_TABLE_ACK       -> read_foreign_device_table_ack:       Read_Foreign_Device_Table_ACK(is_orig);
         DELETE_FOREIGN_DEVICE_TABLE_ENTRY   -> delete_foreign_device_table_entry:   Delete_Foreign_Device_Table_Entry(is_orig);
         DISTRIBUTE_BROADCAST_TO_NETWORK     -> distribute_broadcast_to_network:     Distribute_Broadcast_to_Network(is_orig);
-        ORIGINAL_UNICAST_NPDU               -> original_unicast_npdu:               Original_Unicast_NPDU(is_orig    );
+        ORIGINAL_UNICAST_NPDU               -> original_unicast_npdu:               Original_Unicast_NPDU(is_orig);
         ORIGINAL_BROADCAST_NPDU             -> broadcast_npdu:                      Original_Broadcast_NPDU(is_orig);
         SECURE_BVLL                         -> secure_bvll:                         Secure_BVLL(is_orig);
         default                             -> unknown:                             bytestring &restofdata;

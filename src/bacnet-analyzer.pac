@@ -9,10 +9,6 @@
 
 %extern{
     #include "zeek/file_analysis/Manager.h"
-    #include <random>
-    #include <sstream>
-    #include <chrono>
-    #include <iomanip>
 %}
 
 %header{
@@ -100,7 +96,6 @@
         }
     }BACnetTime;
 
-
     int32 get_signed(const_bytestring data);
     uint32 get_unsigned(const_bytestring data);
     float get_float(const_bytestring data);
@@ -109,7 +104,6 @@
     string get_string2(const_bytestring data);
 
     string parse_tag(uint8 tag_num, uint8 tag_class, const_bytestring data, uint32 tag_length, uint32 tag_length_a);
-
 
     %}
 
@@ -305,7 +299,6 @@
         return str;
     }
 
-
     %}
 
 
@@ -316,9 +309,8 @@ refine flow BACNET_Flow += {
         // Vector of uint8 that holds segmented data.  This is the underlying/backing structure
         // for the const_bytestring that gets passed between the buffer_service_tags function
         // and the process_service_tags function via the Binpac $context.flow.
-        //
+        // 
         vector<binpac::uint8> segmented_data_buffer;
-
     %}
 
     ## Raise bacnet_npdu_source for a routed message's source (network, MAC) while
@@ -395,7 +387,6 @@ refine flow BACNET_Flow += {
 
             return const_bytestring(segmented_data_buffer.data(), segmented_data_buffer.size());
         %}
-
 
     ###################################################################################################
     ##################################### GENERAL BACNET MESSAGE ######################################
